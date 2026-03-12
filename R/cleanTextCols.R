@@ -31,16 +31,16 @@
 #' )
 #'
 #' # --- Nettoyage de toutes les colonnes textuelles (comportement par défaut) ---
-#' funCleanTextCols(dt)
+#' cleanTextCols(dt)
 #'
 #' # --- Nettoyage d'une sélection de colonnes uniquement ---
-#' funCleanTextCols(dt, vecCols = "nom")
+#' cleanTextCols(dt, vecCols = "nom")
 #'
 #' # --- Sans affichage du log ---
-#' funCleanTextCols(dt, showLog = FALSE)
+#' cleanTextCols(dt, showLog = FALSE)
 #'
 #' # --- Nettoyage partiel : uniquement normalisation des espaces et trim ---
-#' funCleanTextCols(
+#' cleanTextCols(
 #'   dt,
 #'   replaceQuotes = FALSE,
 #'   removeNonAscii = FALSE,
@@ -49,8 +49,8 @@
 #' )
 #'
 #' # --- Récupération du résultat (modifié par référence) ---
-#' dtClean <- funCleanTextCols(dt, showLog = FALSE)
-
+#' dtClean <- cleanTextCols(dt, showLog = FALSE)
+#' @export
 cleanTextCols <- function(
   dt,
   vecCols = NULL,

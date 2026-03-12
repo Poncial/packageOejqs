@@ -19,6 +19,7 @@
 #' @param cols [character] Noms des colonnes binaires (0/1) à analyser.
 #' @param labels [character] Labels affichés à la place des noms de colonnes. Doit être de même longueur que `cols`. Si NULL, les noms de colonnes sont utilisés.
 #' @param groupVars [character] Vecteur de 0, 1 ou 2 noms de variables catégorielles pour le regroupement. Default : NULL.
+#' @param question Chaîne de caractères. Titre de la question affiché en titre du graphique.
 #' @param outputDir [character] Répertoire de sauvegarde du graphique.
 #' @param fileFormat [character] Format de sortie : "png", "pdf" ou "svg". Default : "png".
 #' @param barColor [character] Couleur des barres. Default : "#662483".

@@ -74,6 +74,10 @@ strictement positif. Par défaut : \code{300}.}
 \item{yAxisTitle}{\code{character}. Titre de l'axe y. Par défaut :
 \code{"Pourcentage (\%)"}.}
 
+\item{wrapWidth}{Entier. Nombre de caractères maximum avant retour à la ligne automatique des étiquettes de l'axe des x. Par défaut \code{15}.}
+
+\item{angleThreshold}{Entier. Nombre d'étiquettes sur l'axe x à partir duquel l'angle est appliqué pour éviter les chevauchements. Par défaut \code{5}.}
+
 \item{stacked}{\code{logical}. Si \code{TRUE}, les barres sont empilées et normalisées
 à 100\%. Si \code{FALSE} (défaut), les barres sont groupées côte à côte.}
 

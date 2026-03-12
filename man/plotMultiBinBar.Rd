@@ -32,6 +32,8 @@ plotMultiBinBar(
 
 \item{groupVars}{\link{character} Vecteur de 0, 1 ou 2 noms de variables catégorielles pour le regroupement. Default : NULL.}
 
+\item{question}{Chaîne de caractères. Titre de la question affiché en titre du graphique.}
+
 \item{outputDir}{\link{character} Répertoire de sauvegarde du graphique.}
 
 \item{fileFormat}{\link{character} Format de sortie : "png", "pdf" ou "svg". Default : "png".}

@@ -53,5 +53,4 @@ exists("x_intermediaire") # FALSE
 
 # Nettoyage
 file.remove(tmpScript)
-
 }

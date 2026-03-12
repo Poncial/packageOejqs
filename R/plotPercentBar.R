@@ -48,6 +48,9 @@
 #'   en mode empilé (`stacked = TRUE`). Par défaut : `1`. Sans effet en mode
 #'   non empilé.
 #' @param barWidth largeur des barres. Par défaut = `.8`
+#' @param wrapWidth Entier. Nombre de caractères maximum avant retour à la ligne automatique des étiquettes de l'axe des x. Par défaut \code{15}.
+#' @param angleThreshold Entier. Nombre d'étiquettes sur l'axe x à partir duquel l'angle est appliqué pour éviter les chevauchements. Par défaut \code{5}.
+
 #'
 #' @return Retourne invisiblement une liste de graphiques `ggplot2`, un par
 #'   élément de `cols`. Les graphiques sont également sauvegardés dans

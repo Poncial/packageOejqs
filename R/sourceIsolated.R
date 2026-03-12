@@ -41,7 +41,7 @@
 #'
 #' # Nettoyage
 #' file.remove(tmpScript)
-#'
+#' @export
 sourceIsolated <- function(scriptPath, returnObjects = NULL) {
   # Crée un environnement temporaire qui hérite du globalenv
   tmpEnv <- new.env(parent = globalenv())
