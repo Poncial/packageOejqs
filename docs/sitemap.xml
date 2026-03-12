@@ -1,0 +1,27 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/LICENSE.html</loc></url>
+<url><loc>/articles/charger-qualtrics.html</loc></url>
+<url><loc>/articles/creer-graphiques.html</loc></url>
+<url><loc>/articles/demarrage-rapide.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/transformer-donnees.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/reference/cleanTextCols.html</loc></url>
+<url><loc>/reference/extractLabels.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/packageOejqs-package.html</loc></url>
+<url><loc>/reference/plotGroupedBarCharts.html</loc></url>
+<url><loc>/reference/plotMultiBinBar.html</loc></url>
+<url><loc>/reference/plotPercentBar.html</loc></url>
+<url><loc>/reference/plotProportionHeatmap.html</loc></url>
+<url><loc>/reference/recodeBinary.html</loc></url>
+<url><loc>/reference/recodeNumeric.html</loc></url>
+<url><loc>/reference/rgbToHex.html</loc></url>
+<url><loc>/reference/sourceIsolated.html</loc></url>
+<url><loc>/reference/summariseItemsByGroup.html</loc></url>
+</urlset>
+
