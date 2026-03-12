@@ -39,7 +39,7 @@ plotProportionHeatmap(resume)
 
 | Famille | Fonctions |
 |---|---|
-| 📥 **Qualtrics** | `extractLabels()`, `applyValueLabels()` |
+|  **Qualtrics** | `extractLabels()`, `applyValueLabels()` |
 | 🔄 **Transform** | `recodeBinary()`, `recodeNumeric()`, `summariseItemsByGroup()` |
 | 📊 **Plot** | `plotGroupedBarCharts()`, `plotMultiBinBar()`, `plotPercentBar()`, `plotProportionHeatmap()` |
 | 🔧 **Utilitaires** | `cleanTextCols()`, `rgbToHex()`, `sourceIsolated()` |
