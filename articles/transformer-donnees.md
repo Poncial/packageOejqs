@@ -1,0 +1,108 @@
+# Transformer des données
+
+``` r
+library(packageOejqs)
+library(data.table)
+```
+
+------------------------------------------------------------------------
+
+## Recoder des variables binaires — `recodeBinary()`
+
+Transforme des variables catégorielles en variables **0/1**, utile pour
+les questions Oui/Non ou Vrai/Faux.
+
+``` r
+dt <- data.table(
+  id = 1:4,
+  q1 = c("Oui", "Non", "Oui", "Oui"),
+  q2 = c("Non", "Non", "Oui", "Non")
+)
+
+# Recoder : "Oui" -> 1, tout le reste -> 0
+dt_recodee <- recodeBinary(
+  dt     = dt,
+  cols   = c("q1", "q2"),
+  valPos = "Oui"
+)
+
+print(dt_recodee)
+#>    id q1 q2
+#> 1:  1  1  0
+#> 2:  2  0  0
+#> 3:  3  1  1
+#> 4:  4  1  0
+```
+
+> 💡 Le paramètre `valPos` indique quelle modalité doit être codée `1`.
+> Toutes les autres modalités (y compris `NA`) sont codées `0`.
+
+------------------------------------------------------------------------
+
+## Recoder des variables numériques — `recodeNumeric()`
+
+Transforme des **scores numériques** selon une table de correspondance.
+Utile pour inverser une échelle ou regrouper des modalités.
+
+``` r
+dt <- data.table(
+  id    = 1:5,
+  score = c(1, 2, 3, 4, 5)
+)
+
+# Inverser une échelle de Likert 1-5
+dt_inverse <- recodeNumeric(
+  dt         = dt,
+  cols       = "score",
+  sourceVals = c(1, 2, 3, 4, 5),
+  destVals   = c(5, 4, 3, 2, 1)
+)
+
+print(dt_inverse)
+#>    id score
+#> 1:  1     5
+#> 2:  2     4
+#> 3:  3     3
+#> 4:  4     2
+#> 5:  5     1
+```
+
+------------------------------------------------------------------------
+
+## Résumer des items par groupe — `summariseItemsByGroup()`
+
+Calcule des **statistiques descriptives** pour un ensemble d’items,
+ventilées par groupe.
+
+``` r
+dt <- data.table(
+  groupe = c("A", "A", "B", "B", "A"),
+  item1  = c(4, 5, 2, 3, 4),
+  item2  = c(3, 4, 5, 1, 3)
+)
+
+resume <- summariseItemsByGroup(
+  dt       = dt,
+  items    = c("item1", "item2"),
+  groupVar = "groupe"
+)
+
+print(resume)
+```
+
+> 💡 **Astuce :** le résultat de
+> [`summariseItemsByGroup()`](https://poncial.github.io/packageOejqs/reference/summariseItemsByGroup.md)
+> est directement utilisable comme input pour
+> [`plotProportionHeatmap()`](https://poncial.github.io/packageOejqs/reference/plotProportionHeatmap.md).
+
+------------------------------------------------------------------------
+
+## Enchaîner les transformations
+
+``` r
+# Workflow complet : charger -> transformer -> résumer
+resume_final <- data.table::fread("mon_export.csv", skip = 2) |>
+  (\(dt) applyValueLabels(dt, extractLabels("mon_export.csv")))() |>
+  recodeBinary(cols = c("q1", "q2"), valPos = "Oui") |>
+  summariseItemsByGroup(items = c("q1", "q2"), groupVar = "departement")
+```
