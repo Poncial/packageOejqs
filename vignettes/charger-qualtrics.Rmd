@@ -18,9 +18,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-Voici le résumé complet en Markdown, prêt à coller dans une vignette ou un `index.md` :
-
----
 
 # Extraire des données Qualtrics avec `{qualtRics}`
 
