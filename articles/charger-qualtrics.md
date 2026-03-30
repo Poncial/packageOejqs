@@ -1,10 +1,5 @@
 # Charger des données Qualtrics
 
-Voici le résumé complet en Markdown, prêt à coller dans une vignette ou
-un `index.md` :
-
-------------------------------------------------------------------------
-
 ## Extraire des données Qualtrics avec `{qualtRics}`
 
 > Le package [qualtRics](https://docs.ropensci.org/qualtRics/) permet de
