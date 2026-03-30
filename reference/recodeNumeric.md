@@ -119,9 +119,9 @@ recodeNumeric(
   recod = recod,
   verbose = TRUE
 )
-#> 2026-03-12 16:06:35 | Début recodage numérique.
-#> 2026-03-12 16:06:35 | Colonnes numériques créées :  num_Q1, num_Q2
-#> 2026-03-12 16:06:35 | Nombre total de valeurs non recodées :  0
+#> 2026-03-30 13:35:38 | Début recodage numérique.
+#> 2026-03-30 13:35:38 | Colonnes numériques créées :  num_Q1, num_Q2
+#> 2026-03-30 13:35:38 | Nombre total de valeurs non recodées :  0
 #> Correspondances pour Q1 → num_Q1
 #>         Source Destination
 #>         <char>       <num>
@@ -140,5 +140,5 @@ recodeNumeric(
 #>           <char>           <char>     <int>     <int>
 #> 1:            Q1           num_Q1         0         0
 #> 2:            Q2           num_Q2         0         0
-#> 2026-03-12 16:06:35 | Fin du recodage numérique.
+#> 2026-03-30 13:35:38 | Fin du recodage numérique.
 ```

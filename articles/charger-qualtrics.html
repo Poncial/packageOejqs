@@ -72,102 +72,233 @@
 
     
     
+<p>Voici le résumé complet en Markdown, prêt à coller dans une vignette
+ou un <code>index.md</code> :</p>
+<hr>
 <div class="section level2">
-<h2 id="contexte">Contexte<a class="anchor" aria-label="anchor" href="#contexte"></a>
+<h2 id="extraire-des-données-qualtrics-avec-qualtrics">Extraire des données Qualtrics avec <code>{qualtRics}</code><a class="anchor" aria-label="anchor" href="#extraire-des-donn%C3%A9es-qualtrics-avec-qualtrics"></a>
 </h2>
-<p>Quand on exporte des données depuis Qualtrics, on obtient un fichier
-CSV avec <strong>deux lignes d’en-tête</strong> :</p>
-<ul>
-<li>La <strong>ligne 1</strong> : les noms de colonnes techniques
-(<code>Q1</code>, <code>Q2_1</code>…)</li>
-<li>La <strong>ligne 2</strong> : les vrais intitulés des questions</li>
-<li>La <strong>ligne 3</strong> : les noms des niveaux de réponse
-(<code>1</code>, <code>2</code>, <code>3</code>… ou
-<code>Tout à fait d'accord</code>…)</li>
-</ul>
-<p>Le package gère cette structure automatiquement.</p>
+<blockquote>
+<p>Le package <a href="https://docs.ropensci.org/qualtRics/" class="external-link">qualtRics</a> permet de télécharger des données
+d’enquête Qualtrics <strong>directement dans R</strong>, sans passer par
+un export manuel. Toutes les informations utiles se trouvent à cette
+adresse: <a href="https://docs.ropensci.org/qualtRics/" class="external-link uri">https://docs.ropensci.org/qualtRics/</a></p>
+</blockquote>
+<hr>
+<div class="section level3">
+<h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h3>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"qualtRics"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/qualtRics/" class="external-link">qualtRics</a></span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="étape-1-extraire-les-labels-avec-extractlabels">Étape 1 — Extraire les labels avec <code>extractLabels()</code><a class="anchor" aria-label="anchor" href="#%C3%A9tape-1-extraire-les-labels-avec-extractlabels"></a>
-</h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Poncial/packageOejqs" class="external-link">packageOejqs</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Extraire la correspondance codes &lt;-&gt; étiquettes</span></span>
-<span><span class="va">labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extractLabels.html">extractLabels</a></span><span class="op">(</span><span class="st">"chemin/vers/mon_export.csv"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Aperçu du résultat</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">labels</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    colName rawValue          labelValue</span></span>
-<span><span class="co">#&gt; 1:      Q1        1  Tout à fait d'accord</span></span>
-<span><span class="co">#&gt; 2:      Q1        2      Plutôt d'accord</span></span>
-<span><span class="co">#&gt; 3:      Q1        3  Plutôt pas d'accord</span></span>
-<span><span class="co">#&gt; 4:      Q1        4  Pas du tout d'accord</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="étape-1-configurer-ses-identifiants-api-une-seule-fois">Étape 1 — Configurer ses identifiants API (une seule fois)<a class="anchor" aria-label="anchor" href="#%C3%A9tape-1-configurer-ses-identifiants-api-une-seule-fois"></a>
+</h3>
+<p>Pour utiliser l’API Qualtrics, <strong>3 informations</strong> sont
+nécessaires:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th>Identifiant</th>
+<th>Où le trouver</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>Clé API</strong></td>
+<td>Qualtrics → Paramètre du compte -&gt; API</td>
+</tr>
+<tr class="even">
+<td>
+<strong>data center ID</strong> ou <strong>ID de centre de
+données</strong>
+</td>
+<td>Qualtrics → Compte → Utilisateur</td>
+</tr>
+<tr class="odd">
+<td><strong>URL de base</strong></td>
+<td>Ex : <code>yourDataCenterId.qualtrics.com</code> (sans
+<code>https://</code>)</td>
+</tr>
+</tbody>
+</table>
 <blockquote>
-<p>💡 <strong>Note :</strong> <code><a href="../reference/extractLabels.html">extractLabels()</a></code> retourne un
-<code>data.table</code> avec trois colonnes : le nom de la variable, le
-code brut, et l’étiquette lisible.</p>
+<p>Bon tutorial pour importer les données via l’API ici: <a href="https://www.r-bloggers.com/2022/08/working-with-qualtrics-data-part-1-importing-data/" class="external-link uri">https://www.r-bloggers.com/2022/08/working-with-qualtrics-data-part-1-importing-data/</a></p>
+</blockquote>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">qualtrics_api_credentials</span><span class="op">(</span></span>
+<span>  api_key  <span class="op">=</span> <span class="st">"COLLER_MA_CLE_ICI"</span>,</span>
+<span>  base_url <span class="op">=</span> <span class="st">"yourDataCenterId.qualtrics.com"</span>,</span>
+<span>  install  <span class="op">=</span> <span class="cn">TRUE</span>   <span class="co"># ← sauvegarde dans .Renviron (à faire une seule fois)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Pour que ces changements prennent effet, redémarer R Studio ou Recharger les variables d'environnement readRenviron("~/.Renviron")</span></span></code></pre></div>
+<blockquote>
+<p><code>install = TRUE</code> enregistre les identifiants de façon
+permanente. Plus besoin de les re-saisir à chaque session.</p>
 </blockquote>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="étape-2-appliquer-les-labels-avec-applyvaluelabels">Étape 2 — Appliquer les labels avec
-<code>applyValueLabels()</code><a class="anchor" aria-label="anchor" href="#%C3%A9tape-2-appliquer-les-labels-avec-applyvaluelabels"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Charger les données brutes (sans les deux premières lignes d'en-tête)</span></span>
-<span><span class="va">donnees_brutes</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"chemin/vers/mon_export.csv"</span>, skip <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Appliquer les labels</span></span>
-<span><span class="va">donnees</span> <span class="op">&lt;-</span> <span class="fu">applyValueLabels</span><span class="op">(</span></span>
-<span>  dt     <span class="op">=</span> <span class="va">donnees_brutes</span>,</span>
-<span>  labels <span class="op">=</span> <span class="va">labels</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level2">
-<h2 id="résultat-attendu">Résultat attendu<a class="anchor" aria-label="anchor" href="#r%C3%A9sultat-attendu"></a>
-</h2>
+<div class="section level3">
+<h3 id="étape-2-lister-les-enquêtes-disponibles">Étape 2 — Lister les enquêtes disponibles<a class="anchor" aria-label="anchor" href="#%C3%A9tape-2-lister-les-enqu%C3%AAtes-disponibles"></a>
+</h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Avant</span></span>
-<span><span class="va">donnees_brutes</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fu">.</span><span class="op">(</span><span class="va">Q1</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;    Q1</span></span>
-<span><span class="co">#&gt; 1:  1</span></span>
-<span><span class="co">#&gt; 2:  3</span></span>
-<span><span class="co">#&gt; 3:  2</span></span>
+<code class="sourceCode R"><span><span class="co"># Récupérer la liste de toutes les enquêtes accessibles</span></span>
+<span><span class="va">mesEnquetes</span> <span class="op">&lt;-</span> <span class="fu">all_surveys</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Après</span></span>
-<span><span class="va">donnees</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fu">.</span><span class="op">(</span><span class="va">Q1</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;                    Q1</span></span>
-<span><span class="co">#&gt; 1:  Tout à fait d'accord</span></span>
-<span><span class="co">#&gt; 2:    Plutôt pas d'accord</span></span>
-<span><span class="co">#&gt; 3:        Plutôt d'accord</span></span></code></pre></div>
+<span><span class="co"># Afficher la liste</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mesEnquetes</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   id                     name          creationDate   lastModified</span></span>
+<span><span class="co">#&gt; 1 SV_XXXXXXXXXXXXX  Enquête XYZ       2024-01-10    2024-03-15</span></span>
+<span><span class="co">#&gt; 2 SV_YYYYYYYYYYY    Enquête climat    2024-02-01    2024-03-20</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="retenir-lid-colonne-id-de-lenquête-à-analyser-pour-limporter">&gt; Retenir l’<code>id</code> (colonne <code>id</code>) de
+l’enquête à analyser pour l’importer<a class="anchor" aria-label="anchor" href="#retenir-lid-colonne-id-de-lenqu%C3%AAte-%C3%A0-analyser-pour-limporter"></a>
+</h3>
+</div>
+<div class="section level3">
+<h3 id="étape-3-importer-une-enquête">Étape 3 — Importer une enquête<a class="anchor" aria-label="anchor" href="#%C3%A9tape-3-importer-une-enqu%C3%AAte"></a>
+</h3>
+<div class="section level4">
+<h4 id="méthode-a-via-lapi-recommandée">Méthode A — Via l’API (recommandée)<a class="anchor" aria-label="anchor" href="#m%C3%A9thode-a-via-lapi-recommand%C3%A9e"></a>
+</h4>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Télécharger toutes les réponses d'une enquête</span></span>
+<span><span class="va">donnees</span> <span class="op">&lt;-</span> <span class="fu">fetch_survey</span><span class="op">(</span>surveyID <span class="op">=</span> <span class="st">"SV_XXXXXXXXXXXXX"</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Options utiles :</strong></p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">donnees</span> <span class="op">&lt;-</span> <span class="fu">fetch_survey</span><span class="op">(</span></span>
+<span>  surveyID <span class="op">=</span> <span class="st">"SV_XXXXXXXXXXXXX"</span>,</span>
+<span></span>
+<span>  <span class="co"># Filtrer par période</span></span>
+<span>  start_date <span class="op">=</span> <span class="st">"2024-01-01"</span>,</span>
+<span>  end_date   <span class="op">=</span> <span class="st">"2024-03-31"</span>,</span>
+<span></span>
+<span>  <span class="co"># Limiter le nombre de réponses (utile pour tester)</span></span>
+<span>  limit <span class="op">=</span> <span class="fl">100</span>,</span>
+<span></span>
+<span>  <span class="co"># label = TRUE  → texte des réponses ("Tout à fait d'accord")</span></span>
+<span>  <span class="co"># label = FALSE → codes numériques (1, 2, 3...)</span></span>
+<span>  label <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span></span>
+<span>  <span class="co"># Convertir automatiquement les types (factor, date...)</span></span>
+<span>  convert <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span></span>
+<span>  <span class="co"># Afficher la progression dans la console</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th>Paramètre</th>
+<th>Ce que ça fait</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>label = TRUE</code></td>
+<td>Retourne le texte des réponses (défaut)</td>
+</tr>
+<tr class="even">
+<td><code>label = FALSE</code></td>
+<td>Retourne les codes numériques bruts</td>
+</tr>
+<tr class="odd">
+<td><code>convert = TRUE</code></td>
+<td>Convertit auto les types de variables</td>
+</tr>
+<tr class="even">
+<td><code>limit = 100</code></td>
+<td>Télécharge seulement les 100 premières réponses</td>
+</tr>
+<tr class="odd">
+<td>
+<code>start_date</code> / <code>end_date</code>
+</td>
+<td>Filtre par date d’enregistrement</td>
+</tr>
+</tbody>
+</table>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="cas-particuliers">Cas particuliers<a class="anchor" aria-label="anchor" href="#cas-particuliers"></a>
-</h2>
-<div class="section level3">
-<h3 id="mon-fichier-a-des-colonnes-textuelles-sales">Mon fichier a des colonnes textuelles sales<a class="anchor" aria-label="anchor" href="#mon-fichier-a-des-colonnes-textuelles-sales"></a>
-</h3>
-<p>Utilise <code><a href="../reference/cleanTextCols.html">cleanTextCols()</a></code> après le chargement pour
-normaliser les espaces, la ponctuation et les caractères spéciaux :</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">donnees</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cleanTextCols.html">cleanTextCols</a></span><span class="op">(</span><span class="va">donnees</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="je-veux-travailler-sur-plusieurs-fichiers">Je veux travailler sur plusieurs fichiers<a class="anchor" aria-label="anchor" href="#je-veux-travailler-sur-plusieurs-fichiers"></a>
+<h3 id="étape-4-explorer-les-métadonnées">Étape 4 — Explorer les métadonnées<a class="anchor" aria-label="anchor" href="#%C3%A9tape-4-explorer-les-m%C3%A9tadonn%C3%A9es"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Charger et préparer plusieurs exports en une fois</span></span>
-<span><span class="va">fichiers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="st">"data/"</span>, pattern <span class="op">=</span> <span class="st">"\\.csv$"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<div class="section level4">
+<h4 id="voir-les-questions-et-leurs-ids">Voir les questions et leurs IDs<a class="anchor" aria-label="anchor" href="#voir-les-questions-et-leurs-ids"></a>
+</h4>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Tableau : ID de question &lt;-&gt; intitulé</span></span>
+<span><span class="va">questions</span> <span class="op">&lt;-</span> <span class="fu">survey_questions</span><span class="op">(</span>surveyID <span class="op">=</span> <span class="st">"SV_XXXXXXXXXXXXX"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">questions</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   qid       qname                    question</span></span>
+<span><span class="co">#&gt; 1 QID1   satisfaction  "Êtes-vous satisfait ?"</span></span>
+<span><span class="co">#&gt; 2 QID2   pays          "Dans quel pays ?"</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="récupérer-la-correspondance-colonnes-labels">Récupérer la correspondance colonnes ↔︎ labels<a class="anchor" aria-label="anchor" href="#r%C3%A9cup%C3%A9rer-la-correspondance-colonnes-labels"></a>
+</h4>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Après avoir téléchargé l'enquête :</span></span>
+<span><span class="va">donnees</span> <span class="op">&lt;-</span> <span class="fu">fetch_survey</span><span class="op">(</span>surveyID <span class="op">=</span> <span class="st">"SV_XXXXXXXXXXXXX"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">liste_donnees</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">fichiers</span>, \<span class="op">(</span><span class="va">f</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extractLabels.html">extractLabels</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
-<span>  <span class="va">brut</span>   <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">f</span>, skip <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span>  <span class="fu">applyValueLabels</span><span class="op">(</span><span class="va">brut</span>, <span class="va">labels</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Extraire la correspondance complète</span></span>
+<span><span class="va">colmap</span> <span class="op">&lt;-</span> <span class="fu">extract_colmap</span><span class="op">(</span><span class="va">donnees</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">colmap</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="récupérer-les-métadonnées-complètes">Récupérer les métadonnées complètes<a class="anchor" aria-label="anchor" href="#r%C3%A9cup%C3%A9rer-les-m%C3%A9tadonn%C3%A9es-compl%C3%A8tes"></a>
+</h4>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu">metadata</span><span class="op">(</span>surveyID <span class="op">=</span> <span class="st">"SV_XXXXXXXXXXXXX"</span><span class="op">)</span></span>
+<span><span class="co"># Contient : questions, flow, nombre de réponses, options...</span></span></code></pre></div>
+<hr>
+</div>
+</div>
+<div class="section level3">
+<h3 id="récapitulatif-des-fonctions-clefs">Récapitulatif des fonctions clefs<a class="anchor" aria-label="anchor" href="#r%C3%A9capitulatif-des-fonctions-clefs"></a>
+</h3>
+<table class="table">
+<thead><tr class="header">
+<th>Fonction</th>
+<th>Ce qu’elle fait</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>qualtrics_api_credentials()</code></td>
+<td>Configurer sa clé API</td>
+</tr>
+<tr class="even">
+<td><code>all_surveys()</code></td>
+<td>Lister toutes les enquêtes disponibles</td>
+</tr>
+<tr class="odd">
+<td><code>fetch_survey()</code></td>
+<td>Importer une enquête via l’API</td>
+</tr>
+<tr class="even">
+<td><code>read_survey()</code></td>
+<td>Lire un CSV exporté manuellement</td>
+</tr>
+<tr class="odd">
+<td><code>survey_questions()</code></td>
+<td>Voir les questions et leurs IDs</td>
+</tr>
+<tr class="even">
+<td><code>extract_colmap()</code></td>
+<td>Correspondance colonnes ↔︎ labels</td>
+</tr>
+<tr class="odd">
+<td><code>metadata()</code></td>
+<td>Métadonnées complètes de l’enquête</td>
+</tr>
+</tbody>
+</table>
+<hr>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
