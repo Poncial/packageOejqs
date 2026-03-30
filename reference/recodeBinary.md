@@ -126,10 +126,10 @@ recodeBinary(
   naValues = c("", -99),
   verbose = TRUE
 )
-#> 2026-03-30 14:10:20 | Début du recodage binaire.
-#> 2026-03-30 14:10:20 | Forçage en NA des valeurs suivantes :  , -99
-#> 2026-03-30 14:10:20 | Colonnes binaires créées :  bin_Q1, bin_Q2
-#> 2026-03-30 14:10:20 | Nombre total d'incohérences détectées :  0
+#> 2026-03-30 14:21:22 | Début du recodage binaire.
+#> 2026-03-30 14:21:22 | Forçage en NA des valeurs suivantes :  , -99
+#> 2026-03-30 14:21:22 | Colonnes binaires créées :  bin_Q1, bin_Q2
+#> 2026-03-30 14:21:22 | Nombre total d'incohérences détectées :  0
 #> Correspondances pour Q1 → bin_Q1
 #>    Source Destination
 #>    <char>       <int>
@@ -149,5 +149,5 @@ recodeBinary(
 #>           <char>         <char> <int> <int> <int>
 #> 1:            Q1         bin_Q1     2     2     2
 #> 2:            Q2         bin_Q2     2     2     2
-#> 2026-03-30 14:10:20 | Fin du traitement.
+#> 2026-03-30 14:21:22 | Fin du traitement.
 ```
