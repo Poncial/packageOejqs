@@ -1,7 +1,7 @@
 ---
 title: "Démarrage rapide"
 description: >
-  Installez le package et lancez vos premières analyses en 5 minutes.
+  Installez le package et lancez vos premières analyses.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Démarrage rapide}
@@ -37,24 +37,21 @@ library(packageOejqs)
 
 ## Workflow typique en 3 étapes
 
-### Étape 1 — Charger des données Qualtrics 📥
+### Étape 1 — Charger des données (déjà importées en format .csv)
 
-```{r qualtrics}
-# Extraire les labels depuis un export Qualtrics
-labels <- extractLabels("mon_export_qualtrics.csv")
+Si les données doivent être importées de qualtrics, veuillez vous référer à la page [charger des données Qualtrics](charger-qualtrics.html)
 
-# Appliquer les labels sur les données brutes
-donnees <- applyValueLabels(donnees_brutes, labels)
+
+```{r}
+# Charger les données csv dans R
+dt <- fread("chemin/Acces/Vers/monExport.csv")
+
 ```
 
-> 💡 **C'est quoi un "label" ?** Dans Qualtrics, les réponses sont souvent
-> stockées sous forme de codes numériques (1, 2, 3...). `extractLabels()`
-> récupère la correspondance entre ces codes et les vraies étiquettes
-> ("Tout à fait d'accord", "Plutôt d'accord"...).
 
 ---
 
-### Étape 2 — Transformer les données 🔄
+### Étape 2 — Transformer les données 
 
 ```{r transformation}
 # Recoder des variables binaires (ex: Oui/Non -> 1/0)
