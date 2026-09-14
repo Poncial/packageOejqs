@@ -24,7 +24,7 @@ plotMultiBinBar(
 )
 }
 \arguments{
-\item{dt}{\link[data.table:data.table]{data.table::data.table} Table de données source.}
+\item{dt}{\link[data.table:data.table]{data.table} Table de données source.}
 
 \item{cols}{\link{character} Noms des colonnes binaires (0/1) à analyser.}
 

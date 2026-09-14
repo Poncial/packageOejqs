@@ -180,7 +180,7 @@ plotGroupedBarCharts <- function(
   stopifnot(is.character(groupVar), length(groupVar) == 1)
   stopifnot(statType %in% c("mean", "median"))
   stopifnot(errorType %in% c("se", "sd", "iqr", "ci"))
-  stopifnot(is.logical(inversionAxe), length(inversionAxe) == 1)
+  stopifnot(is.logical(flipAxe), length(flipAxe) == 1)
 
   if (!is.null(groupVar2)) {
     stopifnot(is.character(groupVar2), length(groupVar2) == 1)
@@ -306,7 +306,7 @@ plotGroupedBarCharts <- function(
     # -------------------------------------------------------------------------
     # Gestion de l'axe Y et de l'inversion des axes
     # -------------------------------------------------------------------------
-    if (isTRUE(inversionAxe)) {
+    if (isTRUE(flipAxe)) {
       # Inversion des axes avec zoom optionnel
       p <- p + if (!is.null(yLimits)) {
         ggplot2::coord_flip(ylim = yLimits)
