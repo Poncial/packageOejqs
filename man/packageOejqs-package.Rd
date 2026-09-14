@@ -12,11 +12,17 @@ Fonctions internes pour le chargement de données Qualtrics, la transformation d
 Useful links:
 \itemize{
   \item \url{https://github.com/Poncial/packageOejqs}
+  \item \url{https://poncial.github.io/packageOejqs/}
   \item Report bugs at \url{https://github.com/Poncial/packageOejqs/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com}
+\strong{Maintainer}: Alexandre Poncin \email{alexandre.poncin@oejqs.lu}
+
+Authors:
+\itemize{
+  \item Alexandre Poncin \email{alexandre.poncin@oejqs.lu}
+}
 
 }
