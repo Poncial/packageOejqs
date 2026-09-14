@@ -42,6 +42,14 @@
 #'   \code{coord_flip()} et affiche les étiquettes de valeur et d'effectif
 #'   directement sur les barres. Défaut : \code{FALSE}.
 #' @param titre \[optionnel\] Titre principal affiché sur chaque graphique.
+#'   Accepte soit une chaîne de caractères unique, appliquée telle quelle à
+#'   tous les items de \code{summaryList}, soit un vecteur de caractères
+#'   nommé, dont les noms correspondent exactement aux noms de
+#'   \code{summaryList} (typiquement les noms de colonnes sources). Dans ce
+#'   second cas, chaque item reçoit son propre titre. Si un item de
+#'   \code{summaryList} n'a pas de titre correspondant dans le vecteur
+#'   nommé, un avertissement est émis et le graphique est produit sans
+#'   titre pour cet item.
 #' @param sousTitre \[optionnel\] Sous-titre affiché sous le titre principal.
 #' @param titreAxeX Titre de l'axe des X. Défaut : \code{"Groupes"}.
 #' @param titreAxeY Titre de l'axe des Y. Défaut : \code{"Valeur"}.
@@ -146,6 +154,16 @@
 #'   width = 9,
 #'   height = 6
 #' )
+#'
+#' # --- Exemple 4 : titres distincts par item via vecteur nommé -----------
+#' plotGroupedBarCharts(
+#'   summaryList = summaryList,
+#'   groupVar    = "genre",
+#'   titre       = c(item1 = "Résultats pour l'item 1", item2 = "Résultats pour l'item 2"),
+#'   titreAxeY   = "Moyenne (échelle 1-5)",
+#'   yLimits     = c(0, 5)
+#' )
+
 #' }
 #'
 #' @seealso [summariseItemsByGroup()] pour générer \code{summaryList}.
@@ -200,6 +218,37 @@ plotGroupedBarCharts <- function(
   }
 
   # ---------------------------------------------------------------------------
+  # Résolution du titre pour un item donné : accepte soit une chaîne unique
+  # (appliquée à tous les items), soit un vecteur nommé (un titre par item).
+  # Ceci évite d'avoir à appeler la fonction séparément pour chaque item
+  # lorsqu'on veut des titres distincts au sein d'un même summaryList.
+  # ---------------------------------------------------------------------------
+  resolveTitre <- function(titre, itemName) {
+
+    if (is.null(titre)) {
+      return(NULL)
+    }
+
+    # Cas 1 : vecteur nommé -> on cherche le titre correspondant à cet item
+    if (!is.null(names(titre))) {
+      if (itemName %in% names(titre)) {
+        return(titre[[itemName]])
+      } else {
+        warning(
+          "Aucun titre défini pour l'item '", itemName, "' dans le vecteur ",
+          "nommé fourni à `titre`. Le graphique sera produit sans titre ",
+          "pour cet item."
+        )
+        return(NULL)
+      }
+    }
+
+    # Cas 2 : chaîne unique, appliquée telle quelle (comportement historique)
+    titre
+  }
+
+
+  # ---------------------------------------------------------------------------
   # Boucle sur chaque item de la liste via purrr::imap
   # ---------------------------------------------------------------------------
   plotList <- purrr::imap(summaryList, function(dataPlot, itemName) {
@@ -240,7 +289,7 @@ plotGroupedBarCharts <- function(
         ) +
         ggplot2::scale_fill_manual(values = barColorsLocal) +
         ggplot2::labs(
-          title = titre,
+          title = resolveTitre(titre, itemName),
           subtitle = sousTitre,
           x = titreAxeX,
           y = titreAxeY
@@ -294,7 +343,7 @@ plotGroupedBarCharts <- function(
           name = legendTitleLocal
         ) +
         ggplot2::labs(
-          title = titre,
+          title = resolveTitre(titre, itemName),
           subtitle = sousTitre,
           x = titreAxeX,
           y = titreAxeY

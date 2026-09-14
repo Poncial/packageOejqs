@@ -70,7 +70,15 @@ acceptées : \code{"mean"} (défaut) ou \code{"median"}.}
 \code{coord_flip()} et affiche les étiquettes de valeur et d'effectif
 directement sur les barres. Défaut : \code{FALSE}.}
 
-\item{titre}{[optionnel] Titre principal affiché sur chaque graphique.}
+\item{titre}{[optionnel] Titre principal affiché sur chaque graphique.
+Accepte soit une chaîne de caractères unique, appliquée telle quelle à
+tous les items de \code{summaryList}, soit un vecteur de caractères
+nommé, dont les noms correspondent exactement aux noms de
+\code{summaryList} (typiquement les noms de colonnes sources). Dans ce
+second cas, chaque item reçoit son propre titre. Si un item de
+\code{summaryList} n'a pas de titre correspondant dans le vecteur
+nommé, un avertissement est émis et le graphique est produit sans
+titre pour cet item.}
 
 \item{sousTitre}{[optionnel] Sous-titre affiché sous le titre principal.}
 
@@ -196,6 +204,15 @@ plotGroupedBarCharts(
   outputSubfolder = "02_Enseignants",
   width = 9,
   height = 6
+)
+
+# --- Exemple 4 : titres distincts par item via vecteur nommé -----------
+plotGroupedBarCharts(
+  summaryList = summaryList,
+  groupVar    = "genre",
+  titre       = c(item1 = "Résultats pour l'item 1", item2 = "Résultats pour l'item 2"),
+  titreAxeY   = "Moyenne (échelle 1-5)",
+  yLimits     = c(0, 5)
 )
 }
 
