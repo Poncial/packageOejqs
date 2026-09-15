@@ -353,16 +353,12 @@ plotGroupedBarCharts <- function(
       if (!is.null(xBreaks) || isTRUE(reverseXOrder)) {
         p <- p + ggplot2::scale_x_continuous(
           breaks = xBreaks,
-          labels = xLabels,
+          labels = xLabels %||% ggplot2::waiver(),   # <-- correction
           trans  = if (isTRUE(reverseXOrder)) "reverse" else "identity"
         )
       }
     } else {
       if (!is.null(xBreaks) || isTRUE(reverseXOrder)) {
-        # Ordre par défaut affiché par ggplot2 : niveaux du facteur s'il en
-        # est un, sinon ordre alphabétique (comportement standard de
-        # ggplot2 pour une variable caractère). On l'inverse sans jamais
-        # modifier les données sources, via l'argument `limits`.
         ordreParDefaut <- if (is.factor(dataPlot[[groupVar]])) {
           levels(dataPlot[[groupVar]])
         } else {
@@ -370,7 +366,7 @@ plotGroupedBarCharts <- function(
         }
         p <- p + ggplot2::scale_x_discrete(
           breaks = xBreaks,
-          labels = xLabels,
+          labels = xLabels %||% ggplot2::waiver(),   # <-- correction
           limits = if (isTRUE(reverseXOrder)) rev(ordreParDefaut) else NULL
         )
       }
