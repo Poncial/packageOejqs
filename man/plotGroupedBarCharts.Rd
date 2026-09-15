@@ -21,6 +21,10 @@ plotGroupedBarCharts(
   titreAxeX = "Groupes",
   titreAxeY = "Valeur",
   yLimits = NULL,
+  yBreaks = NULL,
+  xBreaks = NULL,
+  xLabels = NULL,
+  reverseXOrder = FALSE,
   outputSubfolder = "01_Eleves",
   width = 7,
   height = 5,
@@ -59,26 +63,18 @@ groupe ou la palette \code{scales::hue_pal()} pour deux groupes.}
 acceptées : \code{"mean"} (défaut) ou \code{"median"}.}
 
 \item{errorType}{Type de barre d'erreur. Valeurs acceptées :
-\itemize{
-\item \code{"se"} : erreur standard (défaut)
-\item \code{"sd"} : écart-type
-\item \code{"ci"} : intervalle de confiance
-\item \code{"iqr"} : étendue interquartile
-}}
+\code{"se"} (défaut), \code{"sd"}, \code{"ci"} ou \code{"iqr"}.}
 
 \item{flipAxes}{Booléen. Si \code{TRUE}, inverse les axes X et Y via
 \code{coord_flip()} et affiche les étiquettes de valeur et d'effectif
 directement sur les barres. Défaut : \code{FALSE}.}
 
 \item{titre}{[optionnel] Titre principal affiché sur chaque graphique.
-Accepte soit une chaîne de caractères unique, appliquée telle quelle à
-tous les items de \code{summaryList}, soit un vecteur de caractères
-nommé, dont les noms correspondent exactement aux noms de
-\code{summaryList} (typiquement les noms de colonnes sources). Dans ce
-second cas, chaque item reçoit son propre titre. Si un item de
-\code{summaryList} n'a pas de titre correspondant dans le vecteur
-nommé, un avertissement est émis et le graphique est produit sans
-titre pour cet item.}
+Accepte soit une chaîne unique (appliquée à tous les items), soit un
+vecteur nommé (un titre par item, les noms devant correspondre à ceux
+de \code{summaryList}). Si un item n'a pas de titre correspondant dans
+le vecteur nommé, un avertissement est émis et aucun titre n'est affiché
+pour cet item.}
 
 \item{sousTitre}{[optionnel] Sous-titre affiché sous le titre principal.}
 
@@ -88,8 +84,29 @@ titre pour cet item.}
 
 \item{yLimits}{[optionnel] Vecteur numérique de longueur 2 définissant les
 limites de l'axe des valeurs, p.ex. \code{c(0, 6)}. Utilise
-\code{coord_cartesian()} pour zoomer sans supprimer de données. Si
-\code{NULL}, les limites sont calculées automatiquement.}
+\code{coord_cartesian()} (ou \code{coord_flip(ylim = ...)}) pour zoomer
+sans supprimer de données. Si \code{NULL}, les limites sont calculées
+automatiquement.}
+
+\item{yBreaks}{[optionnel] Vecteur numérique indiquant les graduations
+exactes de l'axe des valeurs (p.ex. \code{0:6}). Si \code{NULL}
+(défaut), \code{ggplot2} choisit l'espacement automatiquement.}
+
+\item{xBreaks}{[optionnel] Vecteur indiquant les graduations ou
+modalités à afficher sur l'axe des groupes (\code{groupVar}). Utile
+lorsque \code{groupVar} est numérique et que l'espacement automatique ne
+convient pas. Sans effet notable si \code{groupVar} est déjà discret et
+que toutes les modalités doivent être affichées.}
+
+\item{xLabels}{[optionnel] Vecteur de caractères de même longueur que
+\code{xBreaks}, pour personnaliser les étiquettes correspondantes.
+Ignoré si \code{xBreaks = NULL}.}
+
+\item{reverseXOrder}{Booléen. Si \code{TRUE}, inverse l'ordre d'affichage
+des modalités de \code{groupVar}. Pour une variable numérique, l'échelle
+est inversée (\code{trans = "reverse"}). Pour une variable discrète,
+l'ordre d'affichage est inversé sans modifier les données sources.
+Particulièrement utile avec \code{flipAxes = TRUE}. Défaut : \code{FALSE}.}
 
 \item{outputSubfolder}{Sous-dossier de destination dans
 \code{03_outputFiles/01_graphiques/}. Défaut : \code{"01_Eleves"}.}
@@ -101,9 +118,10 @@ limites de l'axe des valeurs, p.ex. \code{c(0, 6)}. Utilise
 \item{dpi}{Résolution du fichier PNG en points par pouce. Défaut : \code{300}.}
 }
 \value{
-Retourne invisiblement une liste nommée d'objets \code{ggplot}, un par item.
-Les graphiques sont également sauvegardés automatiquement sur disque
-(voir section \emph{Fichiers générés}).
+Retourne invisiblement une liste nommée d'objets \code{ggplot}, un par
+item. Les graphiques sont également sauvegardés sur disque dans
+\code{03_outputFiles/01_graphiques/<outputSubfolder>/}, sous le nom
+\code{YYYYMMDD_<typeQuestion>_<groupVar>[_<groupVar2>]_<statType>_<item>.png}.
 }
 \description{
 Génère un graphique en barres pour chaque item d'une liste de résumés
@@ -115,36 +133,10 @@ contenant au minimum une colonne de groupe, une colonne de statistique
 centrale (\code{mean} ou \code{median}) et une colonne d'erreur
 (\code{se}, \code{sd}, \code{ci} ou \code{iqr}).
 }
-\section{Fichiers générés}{
-
-Les graphiques sont sauvegardés dans :
-\preformatted{
-03_outputFiles/01_graphiques/<outputSubfolder>/
-}
-Les noms de fichiers suivent le format :
-\preformatted{
-YYYYMMDD_<typeQuestion>_<groupVar>[_<groupVar2>]_<statType>_<item>.png
-}
-Par exemple :
-\preformatted{
-20250101_Likert_genre_moyenne_item1.png
-20250101_Likert_genre_modele_moyenne_item1.png
-}
-}
-
-\section{Gestion des axes}{
-
-Les limites de l'axe des valeurs sont toujours gérées via
-\code{coord_cartesian()} (ou \code{coord_flip(ylim = ...)}), ce qui
-garantit qu'aucune donnée n'est supprimée lors du zoom, contrairement à
-\code{scale_y_continuous(limits = ...)}.
-}
-
 \examples{
 \dontrun{
 library(data.table)
 
-# --- Données fictives ---
 set.seed(42)
 dt <- data.table(
   genre  = sample(c("Femme", "Homme"), 120, replace = TRUE),
@@ -153,66 +145,28 @@ dt <- data.table(
   item2  = sample(1:5, 120, replace = TRUE)
 )
 
-# --- Calcul des statistiques descriptives ---
 summaryList <- summariseItemsByGroup(
-  dt           = dt,
-  varItems     = c("item1", "item2"),
-  groupVar     = "genre",
+  dt = dt, varItems = c("item1", "item2"), groupVar = "genre",
   includeTotal = TRUE
 )
 
-# --- Exemple 1 : graphique simple, un seul groupe ---
+# Graphique simple
 plotGroupedBarCharts(
-  summaryList = summaryList,
-  groupVar    = "genre",
-  titre       = "Résultats par genre",
-  titreAxeY   = "Moyenne (échelle 1-5)",
-  yLimits     = c(0, 5)
+  summaryList = summaryList, groupVar = "genre",
+  titre = "Résultats par genre", yLimits = c(0, 5), yBreaks = 0:5
 )
 
-# --- Exemple 2 : deux variables de groupe ---
-summaryList2 <- summariseItemsByGroup(
-  dt           = dt,
-  varItems     = c("item1", "item2"),
-  groupVar     = "genre",
-  groupVar2    = "modele",
-  includeTotal = FALSE
+# Titres distincts par item, via vecteur nommé
+plotGroupedBarCharts(
+  summaryList = summaryList, groupVar = "genre",
+  titre = c(item1 = "Résultat item 1", item2 = "Résultat item 2")
 )
 
+# Barres horizontales, ordre inversé, graduations exactes
 plotGroupedBarCharts(
-  summaryList  = summaryList2,
-  groupVar     = "genre",
-  groupVar2    = "modele",
-  legendTitle  = "Modèle pédagogique",
-  barColors    = c("#F39200", "#951B81", "#662483"),
-  titre        = "Résultats par genre et modèle",
-  yLimits      = c(0, 5)
-)
-
-# --- Exemple 3 : barres horizontales avec étiquettes ---
-plotGroupedBarCharts(
-  summaryList = summaryList,
-  groupVar = "genre",
-  typeQuestion = "Likert",
-  flipAxes = TRUE,
-  statType = "median",
-  errorType = "iqr",
-  titre = "Médiane par genre",
-  titreAxeX = "Genre",
-  titreAxeY = "Médiane",
-  yLimits = c(0, 5),
-  outputSubfolder = "02_Enseignants",
-  width = 9,
-  height = 6
-)
-
-# --- Exemple 4 : titres distincts par item via vecteur nommé -----------
-plotGroupedBarCharts(
-  summaryList = summaryList,
-  groupVar    = "genre",
-  titre       = c(item1 = "Résultats pour l'item 1", item2 = "Résultats pour l'item 2"),
-  titreAxeY   = "Moyenne (échelle 1-5)",
-  yLimits     = c(0, 5)
+  summaryList = summaryList, groupVar = "genre",
+  flipAxes = TRUE, reverseXOrder = TRUE,
+  yLimits = c(0, 5), yBreaks = 0:5
 )
 }
 

@@ -32,31 +32,40 @@
 #' @param statType Statistique centrale affichée sur les barres. Valeurs
 #'   acceptées : \code{"mean"} (défaut) ou \code{"median"}.
 #' @param errorType Type de barre d'erreur. Valeurs acceptées :
-#'   \itemize{
-#'     \item \code{"se"} : erreur standard (défaut)
-#'     \item \code{"sd"} : écart-type
-#'     \item \code{"ci"} : intervalle de confiance
-#'     \item \code{"iqr"} : étendue interquartile
-#'   }
+#'   \code{"se"} (défaut), \code{"sd"}, \code{"ci"} ou \code{"iqr"}.
 #' @param flipAxes Booléen. Si \code{TRUE}, inverse les axes X et Y via
 #'   \code{coord_flip()} et affiche les étiquettes de valeur et d'effectif
 #'   directement sur les barres. Défaut : \code{FALSE}.
 #' @param titre \[optionnel\] Titre principal affiché sur chaque graphique.
-#'   Accepte soit une chaîne de caractères unique, appliquée telle quelle à
-#'   tous les items de \code{summaryList}, soit un vecteur de caractères
-#'   nommé, dont les noms correspondent exactement aux noms de
-#'   \code{summaryList} (typiquement les noms de colonnes sources). Dans ce
-#'   second cas, chaque item reçoit son propre titre. Si un item de
-#'   \code{summaryList} n'a pas de titre correspondant dans le vecteur
-#'   nommé, un avertissement est émis et le graphique est produit sans
-#'   titre pour cet item.
+#'   Accepte soit une chaîne unique (appliquée à tous les items), soit un
+#'   vecteur nommé (un titre par item, les noms devant correspondre à ceux
+#'   de \code{summaryList}). Si un item n'a pas de titre correspondant dans
+#'   le vecteur nommé, un avertissement est émis et aucun titre n'est affiché
+#'   pour cet item.
 #' @param sousTitre \[optionnel\] Sous-titre affiché sous le titre principal.
 #' @param titreAxeX Titre de l'axe des X. Défaut : \code{"Groupes"}.
 #' @param titreAxeY Titre de l'axe des Y. Défaut : \code{"Valeur"}.
 #' @param yLimits \[optionnel\] Vecteur numérique de longueur 2 définissant les
 #'   limites de l'axe des valeurs, p.ex. \code{c(0, 6)}. Utilise
-#'   \code{coord_cartesian()} pour zoomer sans supprimer de données. Si
-#'   \code{NULL}, les limites sont calculées automatiquement.
+#'   \code{coord_cartesian()} (ou \code{coord_flip(ylim = ...)}) pour zoomer
+#'   sans supprimer de données. Si \code{NULL}, les limites sont calculées
+#'   automatiquement.
+#' @param yBreaks \[optionnel\] Vecteur numérique indiquant les graduations
+#'   exactes de l'axe des valeurs (p.ex. \code{0:6}). Si \code{NULL}
+#'   (défaut), \code{ggplot2} choisit l'espacement automatiquement.
+#' @param xBreaks \[optionnel\] Vecteur indiquant les graduations ou
+#'   modalités à afficher sur l'axe des groupes (\code{groupVar}). Utile
+#'   lorsque \code{groupVar} est numérique et que l'espacement automatique ne
+#'   convient pas. Sans effet notable si \code{groupVar} est déjà discret et
+#'   que toutes les modalités doivent être affichées.
+#' @param xLabels \[optionnel\] Vecteur de caractères de même longueur que
+#'   \code{xBreaks}, pour personnaliser les étiquettes correspondantes.
+#'   Ignoré si \code{xBreaks = NULL}.
+#' @param reverseXOrder Booléen. Si \code{TRUE}, inverse l'ordre d'affichage
+#'   des modalités de \code{groupVar}. Pour une variable numérique, l'échelle
+#'   est inversée (\code{trans = "reverse"}). Pour une variable discrète,
+#'   l'ordre d'affichage est inversé sans modifier les données sources.
+#'   Particulièrement utile avec \code{flipAxes = TRUE}. Défaut : \code{FALSE}.
 #' @param outputSubfolder Sous-dossier de destination dans
 #'   \code{03_outputFiles/01_graphiques/}. Défaut : \code{"01_Eleves"}.
 #' @param width Largeur du fichier PNG en pouces. Défaut : \code{7}.
@@ -64,36 +73,15 @@
 #' @param dpi Résolution du fichier PNG en points par pouce. Défaut : \code{300}.
 #'
 #' @return
-#' Retourne invisiblement une liste nommée d'objets \code{ggplot}, un par item.
-#' Les graphiques sont également sauvegardés automatiquement sur disque
-#' (voir section *Fichiers générés*).
-#'
-#' @section Fichiers générés:
-#' Les graphiques sont sauvegardés dans :
-#' \preformatted{
-#' 03_outputFiles/01_graphiques/<outputSubfolder>/
-#' }
-#' Les noms de fichiers suivent le format :
-#' \preformatted{
-#' YYYYMMDD_<typeQuestion>_<groupVar>[_<groupVar2>]_<statType>_<item>.png
-#' }
-#' Par exemple :
-#' \preformatted{
-#' 20250101_Likert_genre_moyenne_item1.png
-#' 20250101_Likert_genre_modele_moyenne_item1.png
-#' }
-#'
-#' @section Gestion des axes:
-#' Les limites de l'axe des valeurs sont toujours gérées via
-#' \code{coord_cartesian()} (ou \code{coord_flip(ylim = ...)}), ce qui
-#' garantit qu'aucune donnée n'est supprimée lors du zoom, contrairement à
-#' \code{scale_y_continuous(limits = ...)}.
+#' Retourne invisiblement une liste nommée d'objets \code{ggplot}, un par
+#' item. Les graphiques sont également sauvegardés sur disque dans
+#' \code{03_outputFiles/01_graphiques/<outputSubfolder>/}, sous le nom
+#' \code{YYYYMMDD_<typeQuestion>_<groupVar>[_<groupVar2>]_<statType>_<item>.png}.
 #'
 #' @examples
 #' \dontrun{
 #' library(data.table)
 #'
-#' # --- Données fictives ---
 #' set.seed(42)
 #' dt <- data.table(
 #'   genre  = sample(c("Femme", "Homme"), 120, replace = TRUE),
@@ -102,385 +90,324 @@
 #'   item2  = sample(1:5, 120, replace = TRUE)
 #' )
 #'
-#' # --- Calcul des statistiques descriptives ---
 #' summaryList <- summariseItemsByGroup(
-#'   dt           = dt,
-#'   varItems     = c("item1", "item2"),
-#'   groupVar     = "genre",
+#'   dt = dt, varItems = c("item1", "item2"), groupVar = "genre",
 #'   includeTotal = TRUE
 #' )
 #'
-#' # --- Exemple 1 : graphique simple, un seul groupe ---
+#' # Graphique simple
 #' plotGroupedBarCharts(
-#'   summaryList = summaryList,
-#'   groupVar    = "genre",
-#'   titre       = "Résultats par genre",
-#'   titreAxeY   = "Moyenne (échelle 1-5)",
-#'   yLimits     = c(0, 5)
+#'   summaryList = summaryList, groupVar = "genre",
+#'   titre = "Résultats par genre", yLimits = c(0, 5), yBreaks = 0:5
 #' )
 #'
-#' # --- Exemple 2 : deux variables de groupe ---
-#' summaryList2 <- summariseItemsByGroup(
-#'   dt           = dt,
-#'   varItems     = c("item1", "item2"),
-#'   groupVar     = "genre",
-#'   groupVar2    = "modele",
-#'   includeTotal = FALSE
+#' # Titres distincts par item, via vecteur nommé
+#' plotGroupedBarCharts(
+#'   summaryList = summaryList, groupVar = "genre",
+#'   titre = c(item1 = "Résultat item 1", item2 = "Résultat item 2")
 #' )
 #'
+#' # Barres horizontales, ordre inversé, graduations exactes
 #' plotGroupedBarCharts(
-#'   summaryList  = summaryList2,
-#'   groupVar     = "genre",
-#'   groupVar2    = "modele",
-#'   legendTitle  = "Modèle pédagogique",
-#'   barColors    = c("#F39200", "#951B81", "#662483"),
-#'   titre        = "Résultats par genre et modèle",
-#'   yLimits      = c(0, 5)
+#'   summaryList = summaryList, groupVar = "genre",
+#'   flipAxes = TRUE, reverseXOrder = TRUE,
+#'   yLimits = c(0, 5), yBreaks = 0:5
 #' )
-#'
-#' # --- Exemple 3 : barres horizontales avec étiquettes ---
-#' plotGroupedBarCharts(
-#'   summaryList = summaryList,
-#'   groupVar = "genre",
-#'   typeQuestion = "Likert",
-#'   flipAxes = TRUE,
-#'   statType = "median",
-#'   errorType = "iqr",
-#'   titre = "Médiane par genre",
-#'   titreAxeX = "Genre",
-#'   titreAxeY = "Médiane",
-#'   yLimits = c(0, 5),
-#'   outputSubfolder = "02_Enseignants",
-#'   width = 9,
-#'   height = 6
-#' )
-#'
-#' # --- Exemple 4 : titres distincts par item via vecteur nommé -----------
-#' plotGroupedBarCharts(
-#'   summaryList = summaryList,
-#'   groupVar    = "genre",
-#'   titre       = c(item1 = "Résultats pour l'item 1", item2 = "Résultats pour l'item 2"),
-#'   titreAxeY   = "Moyenne (échelle 1-5)",
-#'   yLimits     = c(0, 5)
-#' )
-
 #' }
 #'
 #' @seealso [summariseItemsByGroup()] pour générer \code{summaryList}.
 #'
 #' @export
 plotGroupedBarCharts <- function(
-  summaryList,
-  typeQuestion = NULL,
-  groupVar,
-  groupVar2 = NULL,
-  legendTitle = NULL,
-  barColors = NULL,
-  barWidth = 0.8,
-  errorBarWidth = 0.2,
-  statType = "mean",
-  errorType = "se",
-  flipAxes = FALSE,
-  titre = NULL,
-  sousTitre = NULL,
-  titreAxeX = "Groupes",
-  titreAxeY = "Valeur",
-  yLimits = NULL,
-  outputSubfolder = "01_Eleves",
-  width = 7,
-  height = 5,
-  dpi = 300
+    summaryList,
+    typeQuestion = NULL,
+    groupVar,
+    groupVar2 = NULL,
+    legendTitle = NULL,
+    barColors = NULL,
+    barWidth = 0.8,
+    errorBarWidth = 0.2,
+    statType = "mean",
+    errorType = "se",
+    flipAxes = FALSE,
+    titre = NULL,
+    sousTitre = NULL,
+    titreAxeX = "Groupes",
+    titreAxeY = "Valeur",
+    yLimits = NULL,
+    yBreaks = NULL,
+    xBreaks = NULL,
+    xLabels = NULL,
+    reverseXOrder = FALSE,
+    outputSubfolder = "01_Eleves",
+    width = 7,
+    height = 5,
+    dpi = 300
 ) {
-  # ---------------------------------------------------------------------------
-  # Validation des arguments
-  # ---------------------------------------------------------------------------
-  stopifnot(is.list(summaryList))
-  stopifnot(is.character(groupVar), length(groupVar) == 1)
-  stopifnot(statType %in% c("mean", "median"))
-  stopifnot(errorType %in% c("se", "sd", "iqr", "ci"))
-  stopifnot(is.logical(flipAxes), length(flipAxes) == 1)
+
+  # ===========================================================================
+  # 1. VALIDATION DES ARGUMENTS
+  # ===========================================================================
+  # Toutes les vérifications sont regroupées ici, en tout début de fonction,
+  # pour échouer rapidement et clairement plutôt qu'au milieu du traçage.
+
+  stopifnot(
+    is.list(summaryList),
+    is.character(groupVar), length(groupVar) == 1,
+    statType %in% c("mean", "median"),
+    errorType %in% c("se", "sd", "iqr", "ci"),
+    is.logical(flipAxes), length(flipAxes) == 1,
+    is.logical(reverseXOrder), length(reverseXOrder) == 1
+  )
 
   if (!is.null(groupVar2)) {
     stopifnot(is.character(groupVar2), length(groupVar2) == 1)
   }
-
   if (!is.null(yLimits)) {
     stopifnot(is.numeric(yLimits), length(yLimits) == 2)
   }
+  if (!is.null(yBreaks)) {
+    stopifnot(is.numeric(yBreaks))
+  }
+  if (!is.null(xBreaks) && !is.null(xLabels)) {
+    stopifnot(length(xBreaks) == length(xLabels))
+  }
 
-  # ---------------------------------------------------------------------------
-  # Création du répertoire de sortie si nécessaire
-  # ---------------------------------------------------------------------------
+  # ===========================================================================
+  # 2. FONCTIONS INTERNES
+  # ===========================================================================
+  # Ces fonctions ne sont utilisées qu'à l'intérieur de plotGroupedBarCharts().
+  # Les isoler ici évite de dupliquer la même logique à plusieurs endroits
+  # du corps principal, ce qui était la source de complexité de l'ancienne
+  # version (blocs CAS 1 / CAS 2 quasi identiques, quatre blocs de geom_text).
+
+  # --- 2.1 Résolution du titre pour un item donné ----------------------------
+  # `titre` peut être une chaîne unique (appliquée à tous les items) ou un
+  # vecteur nommé (un titre différent par item).
+  resoudreTitre <- function(titre, itemName) {
+    if (is.null(titre)) {
+      return(NULL)
+    }
+    if (!is.null(names(titre))) {
+      if (itemName %in% names(titre)) {
+        return(titre[[itemName]])
+      }
+      warning(
+        "Aucun titre défini pour l'item '", itemName, "' dans le vecteur ",
+        "nommé fourni à `titre`. Graphique produit sans titre pour cet item."
+      )
+      return(NULL)
+    }
+    titre
+  }
+
+  # --- 2.2 Construction d'une palette de couleurs nommée ---------------------
+  # Utilisée aussi bien pour un seul groupe (gris uniforme par défaut) que
+  # pour deux groupes (palette hue_pal par défaut), selon `useHueParDefaut`.
+  construirePalette <- function(valeurs, barColors, useHueParDefaut) {
+    valeursUniques <- unique(valeurs)
+    if (!is.null(barColors)) {
+      stats::setNames(
+        rep(barColors, length.out = length(valeursUniques)), valeursUniques
+      )
+    } else if (useHueParDefaut) {
+      stats::setNames(scales::hue_pal()(length(valeursUniques)), valeursUniques)
+    } else {
+      stats::setNames(rep("#9D9D9D", length(valeursUniques)), valeursUniques)
+    }
+  }
+
+  # --- 2.3 Ajout des étiquettes de valeur et d'effectif sur les barres -------
+  # Regroupe en un seul endroit les quatre variantes (flip x groupVar2) qui
+  # étaient auparavant dupliquées dans le corps de la fonction.
+  ajouterEtiquettes <- function(p, statType, groupVar2, barWidth, flipAxes) {
+
+    positionEtiquette <- if (!is.null(groupVar2)) {
+      ggplot2::position_dodge(width = barWidth)
+    } else {
+      "identity"
+    }
+
+    # Selon l'orientation du graphique, l'alignement du texte (hjust/vjust)
+    # et la position par rapport à la barre diffèrent.
+    if (isTRUE(flipAxes)) {
+      alignementValeur <- list(hjust = 2)      # à l'intérieur de la barre
+      alignementN       <- list(hjust = -0.4)   # à l'extérieur de la barre
+    } else {
+      alignementValeur <- list(vjust = 3)       # à l'intérieur de la barre
+      alignementN       <- list(vjust = -4)      # au-dessus de la barre
+    }
+
+    aesValeur <- if (is.null(groupVar2)) {
+      ggplot2::aes(label = round(.data[[statType]], 2))
+    } else {
+      ggplot2::aes(label = round(.data[[statType]], 2), group = .data[[groupVar2]])
+    }
+    aesN <- if (is.null(groupVar2)) {
+      ggplot2::aes(label = paste0("N = ", n))
+    } else {
+      ggplot2::aes(label = paste0("N = ", n), group = .data[[groupVar2]])
+    }
+
+    p +
+      do.call(ggplot2::geom_text, c(
+        list(mapping = aesValeur, size = 3, color = "white", position = positionEtiquette),
+        alignementValeur
+      )) +
+      do.call(ggplot2::geom_text, c(
+        list(mapping = aesN, size = if (isTRUE(flipAxes)) 3 else 2, position = positionEtiquette),
+        alignementN
+      ))
+  }
+
+  # ===========================================================================
+  # 3. PRÉPARATION DU RÉPERTOIRE DE SORTIE
+  # ===========================================================================
+
   outputDir <- file.path("03_outputFiles/01_graphiques", outputSubfolder)
-
   if (!dir.exists(outputDir)) {
     dir.create(outputDir, recursive = TRUE)
   }
 
-  # ---------------------------------------------------------------------------
-  # Résolution du titre pour un item donné : accepte soit une chaîne unique
-  # (appliquée à tous les items), soit un vecteur nommé (un titre par item).
-  # Ceci évite d'avoir à appeler la fonction séparément pour chaque item
-  # lorsqu'on veut des titres distincts au sein d'un même summaryList.
-  # ---------------------------------------------------------------------------
-  resolveTitre <- function(titre, itemName) {
+  # ===========================================================================
+  # 4. BOUCLE PRINCIPALE : UN GRAPHIQUE PAR ITEM
+  # ===========================================================================
+  # Une boucle for classique est utilisée ici plutôt que purrr::imap() : la
+  # fonction produit des effets de bord (sauvegarde de fichiers) pour chaque
+  # item, ce qu'une boucle explicite rend plus simple à suivre qu'un map().
 
-    if (is.null(titre)) {
-      return(NULL)
-    }
+  nomsItems <- names(summaryList)
+  plotList <- vector("list", length(nomsItems))
+  names(plotList) <- nomsItems
 
-    # Cas 1 : vecteur nommé -> on cherche le titre correspondant à cet item
-    if (!is.null(names(titre))) {
-      if (itemName %in% names(titre)) {
-        return(titre[[itemName]])
-      } else {
-        warning(
-          "Aucun titre défini pour l'item '", itemName, "' dans le vecteur ",
-          "nommé fourni à `titre`. Le graphique sera produit sans titre ",
-          "pour cet item."
-        )
-        return(NULL)
-      }
-    }
+  for (itemName in nomsItems) {
 
-    # Cas 2 : chaîne unique, appliquée telle quelle (comportement historique)
-    titre
-  }
+    dataPlot <- summaryList[[itemName]]
 
+    # --- 4.1 Détermination de la variable de remplissage des barres ---------
+    # Avec un seul groupe, les barres sont remplies selon groupVar lui-même
+    # (une couleur par modalité). Avec deux groupes, elles sont remplies
+    # selon groupVar2, et groupVar reste sur l'axe des x.
+    fillVar <- if (is.null(groupVar2)) groupVar else groupVar2
 
-  # ---------------------------------------------------------------------------
-  # Boucle sur chaque item de la liste via purrr::imap
-  # ---------------------------------------------------------------------------
-  plotList <- purrr::imap(summaryList, function(dataPlot, itemName) {
-    # -------------------------------------------------------------------------
-    # CAS 1 : Une seule variable de groupement
-    # -------------------------------------------------------------------------
-    if (is.null(groupVar2)) {
-      # Palette de couleurs : gris uniforme par défaut
-      uniqueGroups <- unique(dataPlot[[groupVar]])
-      barColorsLocal <- if (is.null(barColors)) {
-        stats::setNames(rep("#9D9D9D", length(uniqueGroups)), uniqueGroups)
-      } else {
-        stats::setNames(
-          rep(barColors, length.out = length(uniqueGroups)),
-          uniqueGroups
-        )
-      }
+    barColorsLocal <- construirePalette(
+      dataPlot[[fillVar]], barColors, useHueParDefaut = !is.null(groupVar2)
+    )
 
-      p <- ggplot2::ggplot(
-        dataPlot,
-        ggplot2::aes(
-          x = .data[[groupVar]],
-          y = .data[[statType]],
-          fill = .data[[groupVar]]
-        )
-      ) +
-        ggplot2::geom_col(
-          width    = barWidth,
-          position = "dodge"
-        ) +
-        ggplot2::geom_errorbar(
-          ggplot2::aes(
-            ymin = .data[[statType]] - .data[[errorType]],
-            ymax = .data[[statType]] + .data[[errorType]]
-          ),
-          width = errorBarWidth,
-          position = ggplot2::position_dodge(width = barWidth)
-        ) +
-        ggplot2::scale_fill_manual(values = barColorsLocal) +
-        ggplot2::labs(
-          title = resolveTitre(titre, itemName),
-          subtitle = sousTitre,
-          x = titreAxeX,
-          y = titreAxeY
-        ) +
-        ggplot2::theme_minimal() +
-        ggplot2::theme(legend.position = "none")
-
-      # -------------------------------------------------------------------------
-      # CAS 2 : Deux variables de groupement (groupVar2 dans la légende)
-      # -------------------------------------------------------------------------
+    legendTitleLocal <- if (is.null(groupVar2)) {
+      NULL
+    } else if (!is.null(legendTitle)) {
+      legendTitle
     } else {
-      # Palette de couleurs : hue_pal par défaut pour distinguer les groupes
-      uniqueGroups2 <- unique(dataPlot[[groupVar2]])
-      barColorsLocal <- if (is.null(barColors)) {
-        stats::setNames(
-          scales::hue_pal()(length(uniqueGroups2)),
-          uniqueGroups2
-        )
-      } else {
-        stats::setNames(
-          rep(barColors, length.out = length(uniqueGroups2)),
-          uniqueGroups2
-        )
-      }
-
-      # Titre de légende : argument legendTitle ou nom de groupVar2 par défaut
-      legendTitleLocal <- if (!is.null(legendTitle)) legendTitle else groupVar2
-
-      p <- ggplot2::ggplot(
-        dataPlot,
-        ggplot2::aes(
-          x = .data[[groupVar]],
-          y = .data[[statType]],
-          fill = .data[[groupVar2]]
-        )
-      ) +
-        ggplot2::geom_col(
-          width = barWidth,
-          position = ggplot2::position_dodge(width = barWidth)
-        ) +
-        ggplot2::geom_errorbar(
-          ggplot2::aes(
-            ymin = .data[[statType]] - .data[[errorType]],
-            ymax = .data[[statType]] + .data[[errorType]]
-          ),
-          width = errorBarWidth,
-          position = ggplot2::position_dodge(width = barWidth)
-        ) +
-        ggplot2::scale_fill_manual(
-          values = barColorsLocal,
-          name = legendTitleLocal
-        ) +
-        ggplot2::labs(
-          title = resolveTitre(titre, itemName),
-          subtitle = sousTitre,
-          x = titreAxeX,
-          y = titreAxeY
-        ) +
-        ggplot2::theme_minimal() +
-        ggplot2::theme(legend.position = "right")
+      groupVar2
     }
 
-    # -------------------------------------------------------------------------
-    # Gestion de l'axe Y et de l'inversion des axes
-    # -------------------------------------------------------------------------
+    positionBarres <- if (is.null(groupVar2)) {
+      "identity"
+    } else {
+      ggplot2::position_dodge(width = barWidth)
+    }
+
+    # --- 4.2 Construction du graphique de base -------------------------------
+    p <- ggplot2::ggplot(
+      dataPlot,
+      ggplot2::aes(
+        x = .data[[groupVar]],
+        y = .data[[statType]],
+        fill = .data[[fillVar]]
+      )
+    ) +
+      ggplot2::geom_col(width = barWidth, position = positionBarres) +
+      ggplot2::geom_errorbar(
+        ggplot2::aes(
+          ymin = .data[[statType]] - .data[[errorType]],
+          ymax = .data[[statType]] + .data[[errorType]]
+        ),
+        width = errorBarWidth,
+        position = positionBarres
+      ) +
+      ggplot2::scale_fill_manual(values = barColorsLocal, name = legendTitleLocal) +
+      ggplot2::labs(
+        title = resoudreTitre(titre, itemName),
+        subtitle = sousTitre,
+        x = titreAxeX,
+        y = titreAxeY
+      ) +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(legend.position = if (is.null(groupVar2)) "none" else "right")
+
+    # --- 4.3 Étiquettes de valeur et d'effectif sur les barres --------------
+    p <- ajouterEtiquettes(p, statType, groupVar2, barWidth, flipAxes)
+
+    # --- 4.4 Graduations exactes de l'axe des valeurs (yBreaks) -------------
+    if (!is.null(yBreaks)) {
+      p <- p + ggplot2::scale_y_continuous(breaks = yBreaks)
+    }
+
+    # --- 4.5 Graduations, étiquettes et ordre de l'axe des groupes ----------
+    # Le traitement diffère selon que groupVar est numérique (p.ex. un
+    # niveau scolaire codé 1 à 7) ou discret (facteur/caractère).
+    axeGroupeEstNumerique <- is.numeric(dataPlot[[groupVar]])
+
+    if (axeGroupeEstNumerique) {
+      if (!is.null(xBreaks) || isTRUE(reverseXOrder)) {
+        p <- p + ggplot2::scale_x_continuous(
+          breaks = xBreaks,
+          labels = xLabels,
+          trans  = if (isTRUE(reverseXOrder)) "reverse" else "identity"
+        )
+      }
+    } else {
+      if (!is.null(xBreaks) || isTRUE(reverseXOrder)) {
+        # Ordre par défaut affiché par ggplot2 : niveaux du facteur s'il en
+        # est un, sinon ordre alphabétique (comportement standard de
+        # ggplot2 pour une variable caractère). On l'inverse sans jamais
+        # modifier les données sources, via l'argument `limits`.
+        ordreParDefaut <- if (is.factor(dataPlot[[groupVar]])) {
+          levels(dataPlot[[groupVar]])
+        } else {
+          sort(unique(as.character(dataPlot[[groupVar]])))
+        }
+        p <- p + ggplot2::scale_x_discrete(
+          breaks = xBreaks,
+          labels = xLabels,
+          limits = if (isTRUE(reverseXOrder)) rev(ordreParDefaut) else NULL
+        )
+      }
+    }
+
+    # --- 4.6 Limites de l'axe des valeurs et inversion des axes -------------
+    # coord_flip()/coord_cartesian() sont utilisés plutôt que
+    # scale_y_continuous(limits = ...), afin de ne jamais supprimer de
+    # données lors du zoom (voir section Details de la documentation).
     if (isTRUE(flipAxes)) {
-      # Inversion des axes avec zoom optionnel
       p <- p + if (!is.null(yLimits)) {
         ggplot2::coord_flip(ylim = yLimits)
       } else {
         ggplot2::coord_flip()
       }
-
-      # Étiquettes pour barres HORIZONTALES (après flip) : hjust contrôle
-      # le positionnement gauche/droite à l'intérieur et à l'extérieur
-      if (is.null(groupVar2)) {
-        p <- p +
-          ggplot2::geom_text(
-            ggplot2::aes(label = round(.data[[statType]], 2)),
-            hjust = 2, # À l'intérieur de la barre
-            size = 3,
-            color = "white"
-          ) +
-          ggplot2::geom_text(
-            ggplot2::aes(label = paste0("N = ", n)),
-            hjust = -0.4, # À l'extérieur de la barre
-            size = 3
-          )
-      } else {
-        p <- p +
-          ggplot2::geom_text(
-            ggplot2::aes(
-              label = round(.data[[statType]], 2),
-              group = .data[[groupVar2]]
-            ),
-            hjust = 2,
-            size = 3,
-            color = "white",
-            position = ggplot2::position_dodge(width = barWidth)
-          ) +
-          ggplot2::geom_text(
-            ggplot2::aes(
-              label = paste0("N = ", n),
-              group = .data[[groupVar2]]
-            ),
-            hjust = -0.4,
-            size = 3,
-            position = ggplot2::position_dodge(width = barWidth)
-          )
-      }
-    } else {
-      # Sans inversion : coord_cartesian pour fixer l'échelle Y si demandé
-      if (!is.null(yLimits)) {
-        p <- p + ggplot2::coord_cartesian(ylim = yLimits)
-      }
-
-      # Étiquettes pour barres VERTICALES : vjust contrôle le positionnement
-      # haut/bas à l'intérieur et au-dessus de la barre
-      if (is.null(groupVar2)) {
-        p <- p +
-          ggplot2::geom_text(
-            ggplot2::aes(label = round(.data[[statType]], 2)),
-            vjust = 3, # À l'intérieur de la barre (vers le bas)
-            size = 3,
-            color = "white"
-          ) +
-          ggplot2::geom_text(
-            ggplot2::aes(label = paste0("N = ", n)),
-            vjust = -4, # Au-dessus de la barre
-            size = 2
-          )
-      } else {
-        p <- p +
-          ggplot2::geom_text(
-            ggplot2::aes(
-              label = round(.data[[statType]], 2),
-              group = .data[[groupVar2]]
-            ),
-            vjust = 3,
-            size = 3,
-            color = "white",
-            position = ggplot2::position_dodge(width = barWidth)
-          ) +
-          ggplot2::geom_text(
-            ggplot2::aes(
-              label = paste0("N = ", n),
-              group = .data[[groupVar2]]
-            ),
-            vjust = -4,
-            size = 2,
-            position = ggplot2::position_dodge(width = barWidth)
-          )
-      }
+    } else if (!is.null(yLimits)) {
+      p <- p + ggplot2::coord_cartesian(ylim = yLimits)
     }
 
-
-    # -------------------------------------------------------------------------
-    # Construction du nom de fichier
-    # -------------------------------------------------------------------------
+    # --- 4.7 Construction du nom de fichier et sauvegarde -------------------
     fileNameParts <- c(
-      format(Sys.Date(), "%Y%m%d"), # Date du jour
-      typeQuestion, # Type de question (peut être NULL)
-      groupVar, # Variable principale
-      groupVar2, # Seconde variable (peut être NULL)
-      statType, # Statistique utilisée
-      itemName # Nom de l'item
+      format(Sys.Date(), "%Y%m%d"),
+      typeQuestion,
+      groupVar,
+      groupVar2,
+      statType,
+      itemName
     )
-
-    # Suppression des éléments NULL/NA avant de coller
     fileName <- file.path(
       outputDir,
-      paste(fileNameParts[!is.null(fileNameParts) & !is.na(fileNameParts)],
-        collapse = "_"
-      ) |>
-        paste0(".png")
+      paste0(paste(fileNameParts[!is.null(fileNameParts) & !is.na(fileNameParts)], collapse = "_"), ".png")
     )
 
-    # -------------------------------------------------------------------------
-    # Sauvegarde du graphique
-    # -------------------------------------------------------------------------
-    ggplot2::ggsave(
-      filename = fileName,
-      plot = p,
-      width = width,
-      height = height,
-      dpi = dpi
-    )
+    ggplot2::ggsave(filename = fileName, plot = p, width = width, height = height, dpi = dpi)
 
-    return(p)
-  })
+    plotList[[itemName]] <- p
+  }
 
-  # Retour invisible de la liste de graphiques
   invisible(plotList)
 }
