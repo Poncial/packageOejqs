@@ -314,7 +314,7 @@ plotGroupedBarCharts <- function(
       ggplot2::aes(
         x = .data[[groupVar]],
         y = .data[[statType]],
-        fill = .data[[fillVar]]
+        fill = factor(.data[[fillVar]])
       )
     ) +
       ggplot2::geom_col(width = barWidth, position = positionBarres) +
