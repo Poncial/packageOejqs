@@ -63,6 +63,11 @@ d'exécution.
 Toute valeur non présente dans \code{recod} sera transformée en
 \code{NA} dans la colonne recodée et signalée lors de la vérification.
 
+Les modalités dont le code est \code{NA_real_} dans \code{recod} sont
+considérées comme des NA volontaires : elles ne sont ni comptées dans
+\code{nIncoherences} ni listées dans \code{nonRecoded}, et ne déclenchent pas
+\code{stopOnIncoherence}. Seules les modalités absentes de \code{recod} sont
+signalées.
 Le recodage repose sur une conversion préalable en caractères
 pour supporter facteurs et chaînes.
 }

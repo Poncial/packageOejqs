@@ -35,6 +35,11 @@
 #' Toute valeur non présente dans \code{recod} sera transformée en
 #' \code{NA} dans la colonne recodée et signalée lors de la vérification.
 #'
+#' @details Les modalités dont le code est `NA_real_` dans `recod` sont
+#'   considérées comme des NA volontaires : elles ne sont ni comptées dans
+#'   `nIncoherences` ni listées dans `nonRecoded`, et ne déclenchent pas
+#'   `stopOnIncoherence`. Seules les modalités absentes de `recod` sont
+#'   signalées.
 #' Le recodage repose sur une conversion préalable en caractères
 #' pour supporter facteurs et chaînes.
 #'
@@ -95,6 +100,10 @@ recodeNumeric <- function(
     is.vector(recod),
     !is.null(names(recod))
   )
+
+  # Modalités dont le code est NA_real_ dans le dictionnaire : NA volontaires,
+  # à ne pas compter comme incohérences de recodage.
+  naIntentionnels <- names(recod)[is.na(recod)]
 
   colonnesDest <- paste0(prefix, colonnesSource)
 
@@ -164,16 +173,9 @@ recodeNumeric <- function(
   # Vérification globale vectorisée
   # ------------------------------------------------------------------
 
-  incoherenceGlobale <- dt[, Reduce(
-    `|`,
-    Map(
-      function(src, dest) {
-        !is.na(get(src)) & is.na(get(dest))
-      },
-      colonnesSource,
-      colonnesDest
-    )
-  )]
+  incoherenceGlobale <- dt[, Reduce(`|`, Map(function(src, dest) {
+    !is.na(get(src)) & is.na(get(dest)) & !(get(src) %in% naIntentionnels)
+  }, colonnesSource, colonnesDest))]
 
   nIncoherences <- sum(incoherenceGlobale)
 
@@ -195,7 +197,7 @@ recodeNumeric <- function(
     data.table::setorder(correspondances, Source)
 
     badVals <- correspondances[
-      is.na(Destination) & !is.na(Source),
+      is.na(Destination) & !is.na(Source) & !(Source %in% naIntentionnels),
       Source
     ]
 
