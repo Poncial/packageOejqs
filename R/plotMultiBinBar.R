@@ -71,9 +71,7 @@
 #' }
 #'
 #' @importFrom data.table is.data.table copy melt
-#' @importFrom ggplot2 ggplot aes geom_col geom_text facet_wrap facet_grid
-#'   scale_x_continuous expansion labs theme_minimal theme element_text
-#'   element_blank margin
+#' @importFrom ggplot2 ggplot aes geom_col geom_text facet_wrap facet_grid scale_x_continuous expansion labs theme_minimal theme element_text element_blank margin
 #' @importFrom purrr walk
 #' @export
 plotMultiBinBar <- function(

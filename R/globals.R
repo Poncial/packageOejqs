@@ -51,5 +51,6 @@ utils::globalVariables(c(
   "rawValueTmp",
   "reponse",
   "total",
-  "value"
+  "value",
+  "targetVariable"
 ))

@@ -117,9 +117,7 @@
 #' }
 #'
 #' @importFrom data.table is.data.table melt
-#' @importFrom ggplot2 ggplot aes geom_bar geom_text scale_fill_manual
-#'   scale_y_continuous facet_wrap facet_grid labs ggsave vars position_fill
-#'   waiver
+#' @importFrom ggplot2 ggplot aes geom_bar geom_text scale_fill_manual scale_y_continuous facet_wrap facet_grid labs ggsave vars position_fill waiver
 #' @importFrom scales percent
 #' @importFrom purrr map
 #' @importFrom stringr str_wrap
