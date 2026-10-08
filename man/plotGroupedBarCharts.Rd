@@ -28,7 +28,8 @@ plotGroupedBarCharts(
   outputSubfolder = "01_Eleves",
   width = 7,
   height = 5,
-  dpi = 300
+  dpi = 300,
+  caption = NULL
 )
 }
 \arguments{
@@ -116,6 +117,9 @@ Particulièrement utile avec \code{flipAxes = TRUE}. Défaut : \code{FALSE}.}
 \item{height}{Hauteur du fichier PNG en pouces. Défaut : \code{5}.}
 
 \item{dpi}{Résolution du fichier PNG en points par pouce. Défaut : \code{300}.}
+
+\item{caption}{[optionnel] Note de bas de graphique. Chaîne unique, ou
+vecteur nommé par item (comme \code{titre}).}
 }
 \value{
 Retourne invisiblement une liste nommée d'objets \code{ggplot}, un par

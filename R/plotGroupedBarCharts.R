@@ -71,6 +71,8 @@
 #' @param width Largeur du fichier PNG en pouces. Défaut : \code{7}.
 #' @param height Hauteur du fichier PNG en pouces. Défaut : \code{5}.
 #' @param dpi Résolution du fichier PNG en points par pouce. Défaut : \code{300}.
+#' @param caption \[optionnel\] Note de bas de graphique. Chaîne unique, ou
+#'   vecteur nommé par item (comme \code{titre}).
 #'
 #' @return
 #' Retourne invisiblement une liste nommée d'objets \code{ggplot}, un par
@@ -142,7 +144,8 @@ plotGroupedBarCharts <- function(
     outputSubfolder = "01_Eleves",
     width = 7,
     height = 5,
-    dpi = 300
+    dpi = 300,
+    caption = NULL
 ) {
 
   # ===========================================================================
@@ -330,6 +333,7 @@ plotGroupedBarCharts <- function(
       ggplot2::labs(
         title = resoudreTitre(titre, itemName),
         subtitle = sousTitre,
+        caption = resoudreTitre(caption, itemName),
         x = titreAxeX,
         y = titreAxeY
       ) +
