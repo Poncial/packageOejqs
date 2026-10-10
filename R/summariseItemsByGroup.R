@@ -50,10 +50,11 @@
 #'
 #' @details
 #' Toutes les statistiques sont calculées en supprimant les valeurs manquantes
-#' de manière pairwise. L'intervalle de confiance repose sur l'approximation
-#' normale :
-#' \deqn{z_{1-\alpha/2} \times \frac{sd}{\sqrt{n}}}
-#' où \eqn{z} dépend du niveau de confiance \code{ciLevel}.
+#' de manière pairwise. L'intervalle de confiance repose sur la loi de
+#' Student à \eqn{n - 1} degrés de liberté :
+#' \deqn{t_{1-\alpha/2,\, n-1} \times \frac{sd}{\sqrt{n}}}
+#' où \eqn{t} dépend du niveau de confiance \code{ciLevel} et de l'effectif
+#' \eqn{n} du groupe (non manquant).
 #'
 #' Cette fonction est adaptée pour les items **ordinaux ou numériques**.
 #' Pour des variables purement nominales (MCQ), il est préférable de calculer
@@ -142,7 +143,7 @@ summariseItemsByGroup <- function(
     value.name = "value"
   )
 
-  z <- qnorm(1 - (1 - ciLevel) / 2)
+  # z <- qnorm(1 - (1 - ciLevel) / 2)
 
   summaryFun <- function(x) {
     n <- sum(!is.na(x))
@@ -152,7 +153,7 @@ summariseItemsByGroup <- function(
       mean = mean(x, na.rm = TRUE),
       sd = sdVal * sdMultiplier,
       se = sdVal / sqrt(n),
-      ci = z * sdVal / sqrt(n),
+      ci = stats::qt(1 - (1 - ciLevel) / 2, df = n - 1) * sdVal / sqrt(n),
       median = as.numeric(median(x, na.rm = TRUE)),
       iqr = IQR(x, na.rm = TRUE),
       n = n
