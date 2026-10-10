@@ -30,7 +30,8 @@ plotGroupedBarCharts(
   height = 5,
   dpi = 300,
   caption = NULL,
-  outputDir = NULL
+  outputDir = NULL,
+  wrapWidth = NULL
 )
 }
 \arguments{
@@ -125,6 +126,11 @@ vecteur nommé par item (comme \code{titre}).}
 \item{outputDir}{[optionnel] Chemin complet du dossier de sortie (absolu
 ou relatif). S'il est fourni, \code{outputSubfolder} est ignoré. Défaut
 \code{NULL} : \code{03_outputFiles/01_graphiques/<outputSubfolder>}.}
+
+\item{wrapWidth}{[optionnel] Entier. Nombre de caractères maximal par
+ligne pour les étiquettes de l'axe des groupes ; au-delà, l'étiquette
+passe à la ligne. Sans effet sur les étiquettes plus courtes. Ignoré si
+\code{xLabels} est fourni. Défaut \code{NULL} (pas de retour à la ligne).}
 }
 \value{
 Retourne invisiblement une liste nommée d'objets \code{ggplot}, un par

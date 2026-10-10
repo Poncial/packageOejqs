@@ -76,6 +76,10 @@
 #' @param dpi Résolution du fichier PNG en points par pouce. Défaut : \code{300}.
 #' @param caption \[optionnel\] Note de bas de graphique. Chaîne unique, ou
 #'   vecteur nommé par item (comme \code{titre}).
+#' @param wrapWidth \[optionnel\] Entier. Nombre de caractères maximal par
+#'   ligne pour les étiquettes de l'axe des groupes ; au-delà, l'étiquette
+#'   passe à la ligne. Sans effet sur les étiquettes plus courtes. Ignoré si
+#'   \code{xLabels} est fourni. Défaut \code{NULL} (pas de retour à la ligne).
 #'
 #' @return
 #' Retourne invisiblement une liste nommée d'objets \code{ggplot}, un par
@@ -149,7 +153,8 @@ plotGroupedBarCharts <- function(
     height = 5,
     dpi = 300,
     caption = NULL,
-    outputDir = NULL
+    outputDir = NULL,
+    wrapWidth = NULL
 ) {
 
   # ===========================================================================
@@ -371,19 +376,27 @@ plotGroupedBarCharts <- function(
         )
       }
     } else {
-      if (!is.null(xBreaks) || isTRUE(reverseXOrder)) {
+      if (!is.null(xBreaks) || isTRUE(reverseXOrder) || !is.null(wrapWidth)) {
         ordreParDefaut <- if (is.factor(dataPlot[[groupVar]])) {
           levels(dataPlot[[groupVar]])
         } else {
           sort(unique(as.character(dataPlot[[groupVar]])))
         }
+        labelsAxe <- if (!is.null(xLabels)) {
+          xLabels
+        } else if (!is.null(wrapWidth)) {
+          scales::label_wrap(wrapWidth)
+        } else {
+          ggplot2::waiver()
+        }
         p <- p + ggplot2::scale_x_discrete(
-          breaks = xBreaks,
-          labels = xLabels %||% ggplot2::waiver(),   # <-- correction
+          breaks = xBreaks %||% ggplot2::waiver(),
+          labels = labelsAxe,
           limits = if (isTRUE(reverseXOrder)) rev(ordreParDefaut) else NULL
         )
       }
     }
+
 
     # --- 4.6 Limites de l'axe des valeurs et inversion des axes -------------
     # coord_flip()/coord_cartesian() sont utilisés plutôt que
