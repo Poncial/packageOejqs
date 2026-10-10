@@ -68,6 +68,9 @@
 #'   Particulièrement utile avec \code{flipAxes = TRUE}. Défaut : \code{FALSE}.
 #' @param outputSubfolder Sous-dossier de destination dans
 #'   \code{03_outputFiles/01_graphiques/}. Défaut : \code{"01_Eleves"}.
+#' @param outputDir \[optionnel\] Chemin complet du dossier de sortie (absolu
+#'   ou relatif). S'il est fourni, \code{outputSubfolder} est ignoré. Défaut
+#'   \code{NULL} : \code{03_outputFiles/01_graphiques/<outputSubfolder>}.
 #' @param width Largeur du fichier PNG en pouces. Défaut : \code{7}.
 #' @param height Hauteur du fichier PNG en pouces. Défaut : \code{5}.
 #' @param dpi Résolution du fichier PNG en points par pouce. Défaut : \code{300}.
@@ -145,7 +148,8 @@ plotGroupedBarCharts <- function(
     width = 7,
     height = 5,
     dpi = 300,
-    caption = NULL
+    caption = NULL,
+    outputDir = NULL
 ) {
 
   # ===========================================================================
@@ -267,10 +271,15 @@ plotGroupedBarCharts <- function(
   # 3. PRÉPARATION DU RÉPERTOIRE DE SORTIE
   # ===========================================================================
 
-  outputDir <- file.path("03_outputFiles/01_graphiques", outputSubfolder)
-  if (!dir.exists(outputDir)) {
-    dir.create(outputDir, recursive = TRUE)
+  dossierFinal <- if (!is.null(outputDir)) {
+    outputDir
+  } else {
+    file.path("03_outputFiles/01_graphiques", outputSubfolder)
   }
+  if (!dir.exists(dossierFinal)) {
+    dir.create(dossierFinal, recursive = TRUE)
+  }
+
 
   # ===========================================================================
   # 4. BOUCLE PRINCIPALE : UN GRAPHIQUE PAR ITEM
@@ -400,7 +409,7 @@ plotGroupedBarCharts <- function(
       itemName
     )
     fileName <- file.path(
-      outputDir,
+      dossierFinal,
       paste0(paste(fileNameParts[!is.null(fileNameParts) & !is.na(fileNameParts)], collapse = "_"), ".png")
     )
 

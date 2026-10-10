@@ -29,7 +29,8 @@ plotGroupedBarCharts(
   width = 7,
   height = 5,
   dpi = 300,
-  caption = NULL
+  caption = NULL,
+  outputDir = NULL
 )
 }
 \arguments{
@@ -120,6 +121,10 @@ Particulièrement utile avec \code{flipAxes = TRUE}. Défaut : \code{FALSE}.}
 
 \item{caption}{[optionnel] Note de bas de graphique. Chaîne unique, ou
 vecteur nommé par item (comme \code{titre}).}
+
+\item{outputDir}{[optionnel] Chemin complet du dossier de sortie (absolu
+ou relatif). S'il est fourni, \code{outputSubfolder} est ignoré. Défaut
+\code{NULL} : \code{03_outputFiles/01_graphiques/<outputSubfolder>}.}
 }
 \value{
 Retourne invisiblement une liste nommée d'objets \code{ggplot}, un par
