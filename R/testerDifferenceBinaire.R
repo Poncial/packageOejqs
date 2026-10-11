@@ -142,6 +142,14 @@ testerDifferenceBinaire <- function(dt, cols, labels, groupVar, niveau1, niveau2
     correctionEx <- sum(effectifsEx^3 - effectifsEx) / (nTotal * (nTotal - 1))
     sigmaW <- sqrt(n1 * n2 / 12 * ((nTotal + 1) - correctionEx))
     zValue <- if (sigmaW > 0) (as.numeric(testResult$statistic) - muW) / sigmaW else 0
+    # p bilatérale recalculée depuis W : wilcox.test peut renvoyer 0 pour un grand z positif
+    dW <- as.numeric(testResult$statistic) - muW
+    pValue <- if (sigmaW > 0 && dW != 0) {
+      min(1, 2 * stats::pnorm(-abs((abs(dW) - 0.5) / sigmaW)))
+    } else {
+      1
+    }
+
     effectSize <- round(zValue / sqrt(nTotal), 3)
 
     absEffect <- abs(effectSize)
@@ -156,9 +164,15 @@ testerDifferenceBinaire <- function(dt, cols, labels, groupVar, niveau1, niveau2
     }
 
     data.table::data.table(
-      variable = colName, label = labels[[colName]], n1 = n1, n2 = n2,
-      mediane1 = stats::median(x1), mediane2 = stats::median(x2),
-      pValue = testResult$p.value, effectSize = effectSize, interpretation = interpretation
+      variable = colName,
+      label = labels[[colName]],
+      n1 = n1,
+      n2 = n2,
+      mediane1 = stats::median(x1),
+      mediane2 = stats::median(x2),
+      pValue = pValue,
+      effectSize = effectSize,
+      interpretation = interpretation
     )
   })
   data.table::rbindlist(lignes)
