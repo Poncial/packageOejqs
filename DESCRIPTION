@@ -1,23 +1,26 @@
 Package: packageOejqs
 Title: Outils Equipe : Qualtrics, Data et Viz
-Version: 0.1.0
+Version: 0.2.0
+Depends:
+    R (>= 4.4.0)
 Authors@R: 
     person("Alexandre", "Poncin", , "alexandre.poncin@oejqs.lu", role = c("aut", "cre"))
 Description: Fonctions internes pour le chargement de données Qualtrics,
     la transformation de données, la création de graphiques et certains
     utilitaires généraux.
 License: MIT + file LICENSE
-Imports: 
+Imports:
     data.table,
     forcats,
-    ggplot2,
+    ggplot2 (>= 3.5.0),
     grDevices,
     purrr,
     scales,
     snakecase,
     stats,
     stringr,
-    textclean
+    textclean,
+    utils
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 URL: https://github.com/Poncial/packageOejqs, https://poncial.github.io/packageOejqs/
