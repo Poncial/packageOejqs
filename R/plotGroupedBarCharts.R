@@ -353,7 +353,10 @@ plotGroupedBarCharts <- function(
         width = errorBarWidth,
         position = positionBarres
       ) +
-      ggplot2::scale_fill_manual(values = barColorsLocal, name = legendTitleLocal) +
+      ggplot2::scale_fill_manual(
+        values = barColorsLocal, name = legendTitleLocal,
+        guide = ggplot2::guide_legend(reverse = isTRUE(flipAxes))   # la légende suit l'ordre des barres
+      ) +
       ggplot2::labs(
         title = resoudreTitre(titre, itemName),
         subtitle = sousTitre,
