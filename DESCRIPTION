@@ -1,6 +1,6 @@
 Package: packageOejqs
 Title: Outils Equipe : Qualtrics, Data et Viz
-Version: 0.2.0
+Version: 0.2.5
 Depends:
     R (>= 4.4.0)
 Authors@R: 
