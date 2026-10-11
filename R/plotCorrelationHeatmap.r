@@ -30,6 +30,10 @@
 #'   \code{300}.
 #' @param labelSize Taille du texte affichant les coefficients sur les
 #'   tuiles. Défaut \code{2.8}.
+#' @param captionTexte Chaîne de caractères. Légende du graphique. Par défaut
+#'   \code{"* p < <sigThreshold>"}. À fournir quand les p-values passées dans
+#'   \code{corDt} sont ajustées (p.ex. Holm), pour que la légende le dise.
+
 #'
 #' @details
 #' L'ordre d'affichage des variables sur les axes suit l'ordre d'apparition
@@ -81,7 +85,8 @@ plotCorrelationHeatmap <- function(
   width = 9,
   height = 8,
   dpi = 300,
-  labelSize = 2.8
+  labelSize = 2.8,
+  captionTexte = NULL
 ) {
 
   # Vérifications défensives
@@ -99,6 +104,7 @@ plotCorrelationHeatmap <- function(
   }
 
   stopifnot(
+    is.null(captionTexte) || (is.character(captionTexte) && length(captionTexte) == 1),
     is.character(outputPath),
     length(outputPath) == 1,
     is.numeric(sigThreshold),
@@ -111,6 +117,7 @@ plotCorrelationHeatmap <- function(
     is.numeric(dpi),
     dpi > 0
   )
+
 
 
   # Création du répertoire de sortie si nécessaire
@@ -164,7 +171,7 @@ plotCorrelationHeatmap <- function(
       subtitle = sousTitre,
       x = NULL,
       y = NULL,
-      caption = paste0("* p < ", sigThreshold)
+      caption = if (is.null(captionTexte)) paste0("* p < ", sigThreshold) else captionTexte
     ) +
     ggplot2::theme_minimal(base_size = 10) +
     ggplot2::theme(
