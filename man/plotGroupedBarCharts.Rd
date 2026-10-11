@@ -24,7 +24,7 @@ plotGroupedBarCharts(
   yBreaks = NULL,
   xBreaks = NULL,
   xLabels = NULL,
-  reverseXOrder = FALSE,
+  reverseXOrder = TRUE,
   outputSubfolder = "01_Eleves",
   width = 7,
   height = 5,

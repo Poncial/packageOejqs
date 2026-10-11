@@ -66,51 +66,31 @@
 #'
 #' @export
 combineSummaryForSynthesis <- function(summaryList, itemLabels) {
-  # --------------------------------------------------------------------
-  # Vérifications défensives
-  # --------------------------------------------------------------------
-
   stopifnot(
-    is.list(summaryList),
-    !is.null(names(summaryList)),
-    length(summaryList) > 0
+    is.list(summaryList), !is.null(names(summaryList)), length(summaryList) > 0,
+    is.character(itemLabels), !is.null(names(itemLabels))
   )
-
-  stopifnot(
-    is.character(itemLabels),
-    !is.null(names(itemLabels))
-  )
-
-  missingLabels <- setdiff(names(summaryList), names(itemLabels))
-  if (length(missingLabels) > 0) {
-    stop(
-      "itemLabels ne couvre pas tous les items de summaryList. ",
-      "Items manquants : ", paste(missingLabels, collapse = ", ")
-    )
+  manquants <- setdiff(names(summaryList), names(itemLabels))
+  if (length(manquants) > 0) {
+    stop("itemLabels ne couvre pas : ", paste(manquants, collapse = ", "))
   }
-
-  # Vérification défensive : chaque élément de summaryList doit contenir
-  # une colonne "item", nécessaire pour le renommage
-  missingItemCol <- purrr::keep(names(summaryList), function(nm) {
-    !"item" %in% names(summaryList[[nm]])
-  })
-
-  if (length(missingItemCol) > 0) {
-    stop(
-      "Les éléments suivants de summaryList ne contiennent pas de colonne ",
-      "'item' : ", paste(missingItemCol, collapse = ", "),
-      ". Cette fonction attend une sortie de summariseItemsByGroup()."
-    )
+  libellesUtilises <- itemLabels[names(summaryList)]
+  if (anyDuplicated(unname(libellesUtilises))) {
+    stop("Libellés dupliqués dans itemLabels : ",
+         paste(unname(libellesUtilises)[duplicated(libellesUtilises)], collapse = ", "))
   }
-
-  # --------------------------------------------------------------------
-  # Assemblage et renommage
-  # --------------------------------------------------------------------
+  sansItem <- names(summaryList)[!vapply(summaryList, \(d) "item" %in% names(d), logical(1))]
+  if (length(sansItem) > 0) {
+    stop("Pas de colonne 'item' dans : ", paste(sansItem, collapse = ", "),
+         ". Sortie de summariseItemsByGroup() attendue.")
+  }
 
   combined <- data.table::rbindlist(summaryList, use.names = TRUE)
-
-  # Remplacement du nom brut de la colonne source par le libellé lisible
-  combined[, item := itemLabels[item]]
-
+  # item devient un facteur ordonné comme summaryList (et non par ordre alphabétique)
+  combined[["item"]] <- factor(
+    unname(itemLabels[as.character(combined[["item"]])]),
+    levels = unname(libellesUtilises)
+  )
   combined
 }
+

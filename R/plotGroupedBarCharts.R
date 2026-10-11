@@ -147,7 +147,7 @@ plotGroupedBarCharts <- function(
     yBreaks = NULL,
     xBreaks = NULL,
     xLabels = NULL,
-    reverseXOrder = FALSE,
+    reverseXOrder = TRUE,
     outputSubfolder = "01_Eleves",
     width = 7,
     height = 5,
@@ -217,17 +217,27 @@ plotGroupedBarCharts <- function(
   # Utilisée aussi bien pour un seul groupe (gris uniforme par défaut) que
   # pour deux groupes (palette hue_pal par défaut), selon `useHueParDefaut`.
   construirePalette <- function(valeurs, barColors, useHueParDefaut) {
-    valeursUniques <- unique(valeurs)
-    if (!is.null(barColors)) {
-      stats::setNames(
-        rep(barColors, length.out = length(valeursUniques)), valeursUniques
-      )
-    } else if (useHueParDefaut) {
-      stats::setNames(scales::hue_pal()(length(valeursUniques)), valeursUniques)
+    niveaux <- if (is.factor(valeurs)) {
+      levels(droplevels(valeurs))
+    } else if (is.numeric(valeurs)) {
+      as.character(sort(unique(valeurs)))
     } else {
-      stats::setNames(rep("#9D9D9D", length(valeursUniques)), valeursUniques)
+      sort(unique(as.character(valeurs)))
     }
+    if (!is.null(barColors) && !is.null(names(barColors))) {
+      manquants <- setdiff(niveaux, names(barColors))
+      if (length(manquants) > 0) {
+        stop("`barColors` nommé : couleur absente pour : ", paste(manquants, collapse = ", "))
+      }
+      return(barColors[niveaux])
+    }
+    if (!is.null(barColors)) {
+      return(stats::setNames(rep(barColors, length.out = length(niveaux)), niveaux))
+    }
+    if (useHueParDefaut) return(stats::setNames(scales::hue_pal()(length(niveaux)), niveaux))
+    stats::setNames(rep("#9D9D9D", length(niveaux)), niveaux)
   }
+
 
   # --- 2.3 Ajout des étiquettes de valeur et d'effectif sur les barres -------
   # Regroupe en un seul endroit les quatre variantes (flip x groupVar2) qui
@@ -370,9 +380,9 @@ plotGroupedBarCharts <- function(
     if (axeGroupeEstNumerique) {
       if (!is.null(xBreaks) || isTRUE(reverseXOrder)) {
         p <- p + ggplot2::scale_x_continuous(
-          breaks = xBreaks,
-          labels = xLabels %||% ggplot2::waiver(),   # <-- correction
-          trans  = if (isTRUE(reverseXOrder)) "reverse" else "identity"
+          breaks    = xBreaks %||% ggplot2::waiver(),  # sans xBreaks : repères automatiques
+          labels    = xLabels %||% ggplot2::waiver(),
+          transform = if (isTRUE(reverseXOrder)) "reverse" else "identity"
         )
       }
     } else {

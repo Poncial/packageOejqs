@@ -50,7 +50,6 @@
 #' @param barWidth largeur des barres. Par défaut = `.8`
 #' @param wrapWidth Entier. Nombre de caractères maximum avant retour à la ligne automatique des étiquettes de l'axe des x. Par défaut \code{15}.
 #' @param angleThreshold Entier. Nombre d'étiquettes sur l'axe x à partir duquel l'angle est appliqué pour éviter les chevauchements. Par défaut \code{5}.
-
 #'
 #' @return Retourne invisiblement une liste de graphiques `ggplot2`, un par
 #'   élément de `cols`. Les graphiques sont également sauvegardés dans
@@ -203,6 +202,13 @@ plotPercentBar <- function(
     variable.name = "question",
     value.name = "value"
   )
+  if (!is.null(groupVars)) {
+    estNaGroupe <- dtLong[, Reduce(`|`, lapply(.SD, is.na)), .SDcols = groupVars]
+    if (any(estNaGroupe)) {
+      message(sum(estNaGroupe), " observations retirées (NA dans groupVars).")
+      dtLong <- dtLong[!estNaGroupe]
+    }
+  }
 
   # Calcul des pourcentages au sein de chaque combinaison question x groupVars
   byVars <- c("question", groupVars)
@@ -231,6 +237,11 @@ plotPercentBar <- function(
 
   # Application des valueLabels si fournis
   if (!is.null(valueLabels)) {
+    horsLabels <- setdiff(unique(as.character(dtPct$value)), names(valueLabels))
+    if (length(horsLabels) > 0) {
+      stop("Modalités absentes de `valueLabels` : ", paste(horsLabels, collapse = ", "))
+    }
+
     dtPct[, value := factor(value, levels = names(valueLabels))]
   } else {
     dtPct[, value := factor(value)]
@@ -330,7 +341,9 @@ plotPercentBar <- function(
       as.character(unique(dtQ[[xVar]]))
     }
 
-    needsWrap <- max(nchar(xLabels)) > wrapWidth
+    xLabels <- xLabels[!is.na(xLabels)]
+    needsWrap <- length(xLabels) > 0 && max(nchar(xLabels)) > wrapWidth
+
     needsAngle <- length(xLabels) > angleThreshold
 
     xAngle <- if (needsAngle) 45 else 0
