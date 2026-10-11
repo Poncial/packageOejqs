@@ -12,9 +12,8 @@ getGroupVarMeta(metaGroupVars, varName)
 \item{varName}{Nom de la variable de regroupement.}
 }
 \value{
-Liste contenant \code{levels}, \code{colors}, \code{axisTitle}, \code{legendTitle}.
+Liste \code{levels}, \code{colors} (nommé), \code{axisTitle}, \code{legendTitle}.
 }
 \description{
-Garantit qu'une modalité a toujours la même couleur et le même ordre
-d'affichage dans tous les scripts (couleurs associées PAR NOM).
+Les couleurs sont associées par NOM de modalité, jamais par position.
 }

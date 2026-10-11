@@ -36,7 +36,7 @@
 #'
 #' **Calcul de la taille d'effet epsilon-carré**
 #'
-#' La taille d'effet retournée, epsilon-carré (\eqn{\epsilon^2}), est
+#' La taille d'effet retournée, η² basé sur H, (H − k + 1)/(n − k)(\eqn{\epsilon^2}), est
 #' calculée à partir de la statistique H du test :
 #' \deqn{\epsilon^2 = \frac{H - k + 1}{n - k}}
 #' où \eqn{H} est la statistique de Kruskal-Wallis, \eqn{k} le nombre de
@@ -56,7 +56,7 @@
 #'     utilisé pour le test.}
 #'   \item{kGroupes}{Nombre de groupes distincts comparés.}
 #'   \item{pValue}{P-value du test de Kruskal-Wallis.}
-#'   \item{epsilonSq}{Taille d'effet epsilon-carré (voir Details). \code{NA}
+#'   \item{etaSqH}{Taille d'effet η² basé sur H, (H − k + 1)/(n − k)(voir Details). \code{NA}
 #'     si l'effectif ou le nombre de groupes est insuffisant.}
 #'   \item{interpretation}{Catégorie qualitative de la taille d'effet, ou
 #'     \code{"Effectif insuffisant"} si le test n'a pas pu être calculé.}
@@ -99,17 +99,17 @@ testerDifferenceMultiGroupe <- function(
 
   stopifnot(
     data.table::is.data.table(dt),
-    is.character(cols), 
+    is.character(cols),
     length(cols) > 0,
     all(cols %in% names(dt)),
-    is.character(labels), 
+    is.character(labels),
     !is.null(names(labels)),
-    is.character(groupVar), 
+    is.character(groupVar),
     length(groupVar) == 1,
     groupVar %in% names(dt),
-    is.numeric(minN), 
+    is.numeric(minN),
     minN > 0,
-    is.numeric(minGroupes), 
+    is.numeric(minGroupes),
     minGroupes >= 2
   )
 
@@ -130,7 +130,7 @@ testerDifferenceMultiGroupe <- function(
   # Boucle sur chaque variable à tester
   # ---------------------------------------------------------------------------
 
-  purrr::map_dfr(cols, function(colName) {
+  data.table::rbindlist(purrr::map(cols, function(colName) {
     # Restriction aux lignes completes sur la variable testee ET la
     # variable de regroupement : kruskal.test() echouerait sinon sur les
     # NA, et on veut un effectif coherent avec ce qui est reellement teste.
@@ -150,7 +150,7 @@ testerDifferenceMultiGroupe <- function(
         n = nTotal,
         kGroupes = k,
         pValue = NA_real_,
-        epsilonSq = NA_real_,
+        etaSqH = NA_real_,
         interpretation = "Effectif insuffisant"
       ))
     }
@@ -163,17 +163,17 @@ testerDifferenceMultiGroupe <- function(
     # comme la proportion de variance des rangs expliquee par le groupe,
     # et reste comparable entre variables independamment du nombre de
     # groupes compares (contrairement a H seul, qui depend de k).
-    epsilonSq <- round(
+    etaSqH <- round(
       as.numeric((testResult$statistic - k + 1) / (nTotal - k)), 3
     )
 
     # Categorisation qualitative de l'ampleur de l'effet (seuils usuels
     # pour epsilon-carre)
-    interpretation <- if (epsilonSq < 0.01) {
+    interpretation <- if (etaSqH < 0.01) {
       "Négligeable"
-    } else if (epsilonSq < 0.06) {
+    } else if (etaSqH < 0.06) {
       "Faible"
-    } else if (epsilonSq < 0.14) {
+    } else if (etaSqH < 0.14) {
       "Modérée"
     } else {
       "Forte"
@@ -184,9 +184,9 @@ testerDifferenceMultiGroupe <- function(
       label = labels[[colName]],
       n = nTotal,
       kGroupes = k,
-      pValue = round(testResult$p.value, 4),
-      epsilonSq = epsilonSq,
+      pValue = testResult$p.value,
+      etaSqH = etaSqH,
       interpretation = interpretation
     )
-  })
+  }))
 }

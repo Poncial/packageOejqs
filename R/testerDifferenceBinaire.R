@@ -27,6 +27,7 @@
 #'   pour qu'un test soit calculé. En dessous de ce seuil, la ligne
 #'   correspondante est retournée avec des valeurs manquantes plutôt que
 #'   d'exécuter un test statistiquement peu fiable. Par défaut \code{5}.
+#' @param minN : Effectif minimal par groupe. En dessous, la ligne est renvoyée avec effectSize = NA et interpretation = "Effectif insuffisant".
 #'
 #' @details
 #' **Calcul de la taille d'effet signée**
@@ -41,10 +42,13 @@
 #' Cette fonction évite ce piège en calculant le score Z directement à
 #' partir de la statistique W retournée par le test, standardisée par
 #' rapport à sa moyenne et son écart-type attendus sous l'hypothèse nulle :
-#' \deqn{Z = \frac{W - n_1 n_2 / 2}{\sqrt{n_1 n_2 (n_1 + n_2 + 1) / 12}}}
-#' La taille d'effet retournée est \eqn{r = Z / \sqrt{n_1 + n_2}}, positive
-#' si \code{niveau1} présente des valeurs tendanciellement plus élevées que
-#' \code{niveau2}, négative dans le cas inverse.
+#' \deqn{Z = \frac{W - n_1 n_2 / 2}{\sigma_W}, \quad
+#'   \sigma_W = \sqrt{\frac{n_1 n_2}{12}\left[(N + 1) -
+#'   \frac{\sum_j (t_j^3 - t_j)}{N (N - 1)}\right]}}
+#' où \eqn{N = n_1 + n_2} et \eqn{t_j} est le nombre d'observations ex aequo
+#' pour chaque valeur distincte de l'échantillon combiné. Cette correction est
+#' celle de [stats::wilcox.test()] : le Z et la p-value reposent sur la même
+#' variance. Si \eqn{\sigma_W = 0} (toutes les valeurs identiques), r vaut 0.
 #'
 #' **Seuils d'interprétation de la taille d'effet** (règle usuelle) :
 #' \code{< 0.1} négligeable, \code{< 0.3} faible, \code{< 0.5} modérée,
@@ -55,11 +59,12 @@
 #' \describe{
 #'   \item{variable}{Nom brut de la colonne testée.}
 #'   \item{label}{Libellé lisible, issu de \code{labels}.}
-#'   \item{n1, n2}{Effectifs non manquants dans \code{niveau1} et
-#'     \code{niveau2} respectivement.}
+#'   \item{n1, n2}{Effectifs non manquants de chaque niveau (renseignés même
+#'     si l'effectif est insuffisant pour tester).}
 #'   \item{mediane1, mediane2}{Médianes observées dans chaque groupe,
 #'     fournies pour vérifier la cohérence du signe de \code{effectSize}.}
-#'   \item{pValue}{P-value bilatérale du test de Mann-Whitney.}
+#'   \item{pValue}{P-value bilatérale brute (non arrondie), à ajuster
+#'     (Holm) par l'appelant si plusieurs tests forment une famille.}
 #'   \item{effectSize}{Taille d'effet signée (voir Details). \code{NA} si
 #'     l'effectif est insuffisant dans l'un des deux groupes.}
 #'   \item{interpretation}{Catégorie qualitative de la taille d'effet, ou
@@ -90,114 +95,55 @@
 #' @seealso [stats::wilcox.test()] pour le test sous-jacent.
 #'
 #' @export
-testerDifferenceBinaire <- function(
-  dt,
-  cols,
-  labels,
-  groupVar,
-  niveau1,
-  niveau2,
-  minN = 5
-) {
-  # ---------------------------------------------------------------------------
-  # Vérifications défensives
-  # ---------------------------------------------------------------------------
-
+testerDifferenceBinaire <- function(dt, cols, labels, groupVar, niveau1, niveau2, minN = 5) {
   stopifnot(
     data.table::is.data.table(dt),
-    is.character(cols),
-    length(cols) > 0,
-    all(cols %in% names(dt)),
-    is.character(labels), 
-    !is.null(names(labels)),
-    is.character(groupVar), 
-    length(groupVar) == 1,
-    groupVar %in% names(dt),
-    is.character(niveau1), 
-    length(niveau1) == 1,
-    is.character(niveau2), 
-    length(niveau2) == 1,
-    is.numeric(minN), 
-    minN > 0
+    is.character(cols), length(cols) > 0, all(cols %in% names(dt)),
+    is.character(labels), !is.null(names(labels)),
+    is.character(groupVar), length(groupVar) == 1, groupVar %in% names(dt),
+    is.character(niveau1), length(niveau1) == 1,
+    is.character(niveau2), length(niveau2) == 1, niveau1 != niveau2,
+    is.numeric(minN), minN > 0
   )
-
-  # Chaque colonne à tester doit avoir un libellé correspondant. Sans cette
-  # vérification explicite, une colonne sans libellé provoquerait une erreur
-  # d'indexation peu compréhensible plus loin dans la fonction (cas
-  # notamment rencontré lorsque `labels` provient d'un unlist() sur une
-  # liste de listes nommées, qui préfixe les noms silencieusement).
   colsManquantes <- setdiff(cols, names(labels))
   if (length(colsManquantes) > 0) {
-    stop(
-      "Aucun libellé trouvé dans `labels` pour : ",
-      paste(colsManquantes, collapse = ", "),
-      ". Verifiez la construction du vecteur `labels`."
-    )
+    stop("Aucun libellé trouvé dans `labels` pour : ", paste(colsManquantes, collapse = ", "))
   }
 
-  # ---------------------------------------------------------------------------
-  # Boucle sur chaque variable à tester
-  # ---------------------------------------------------------------------------
+  groupe <- as.character(dt[[groupVar]])
+  # Un niveau jamais observé est presque toujours une faute de frappe
+  absents <- setdiff(c(niveau1, niveau2), unique(groupe))
+  if (length(absents) > 0) {
+    stop("Niveau(x) absent(s) de `", groupVar, "` : ", paste(absents, collapse = ", "),
+         ". Niveaux observés : ", paste(sort(unique(groupe)), collapse = ", "))
+  }
 
-  purrr::map_dfr(cols, function(colName) {
-    # Découpage de la colonne testée selon les niveaux de groupVar. split()
-    # produit une liste nommée par niveau, ce qui permet d'extraire
-    # directement les deux sous-vecteurs d'intérêt par leur nom plutôt que
-    # par leur position (plus sûr si l'ordre des niveaux varie).
-    groupes <- split(dt[[colName]], dt[[groupVar]])
+  lignes <- purrr::map(cols, function(colName) {
+    x  <- dt[[colName]]
+    x1 <- x[!is.na(x) & !is.na(groupe) & groupe == niveau1]
+    x2 <- x[!is.na(x) & !is.na(groupe) & groupe == niveau2]
+    n1 <- length(x1)
+    n2 <- length(x2)
 
-    # Garde défensive : les deux niveaux demandés doivent exister dans les
-    # données, et chacun doit compter au moins `minN` observations non
-    # manquantes. Si ce n'est pas le cas, on retourne une ligne "vide"
-    # plutôt que de laisser wilcox.test() échouer ou produire un résultat
-    # instable sur un trop petit échantillon.
-    effectifsSuffisants <- all(c(niveau1, niveau2) %in% names(groupes)) &&
-      all(sapply(groupes[c(niveau1, niveau2)], function(x) sum(!is.na(x))) >= minN)
-
-    if (!effectifsSuffisants) {
+    if (n1 < minN || n2 < minN) {
       return(data.table::data.table(
-        variable = colName,
-        label = labels[[colName]],
-        n1 = NA_integer_,
-        n2 = NA_integer_,
-        mediane1 = NA_real_,
-        mediane2 = NA_real_,
-        pValue = NA_real_,
-        effectSize = NA_real_,
-        interpretation = "Effectif insuffisant"
+        variable = colName, label = labels[[colName]], n1 = n1, n2 = n2,
+        mediane1 = NA_real_, mediane2 = NA_real_, pValue = NA_real_,
+        effectSize = NA_real_, interpretation = "Effectif insuffisant"
       ))
     }
-
-    x1 <- groupes[[niveau1]]
-    x2 <- groupes[[niveau2]]
-
-    # exact = FALSE : nécessaire dès qu'il y a des ex aequo (systématique
-    # avec des échelles ordinales de type Likert ou fréquence), sans quoi
-    # wilcox.test() émettrait un avertissement à chaque appel.
+    nTotal <- n1 + n2
     testResult <- stats::wilcox.test(x1, x2, exact = FALSE)
 
-    n1 <- sum(!is.na(x1))
-    n2 <- sum(!is.na(x2))
-    nTotal <- n1 + n2
-
-    # --- Calcul du score Z signé --------------------------------------------
-    # La p-value bilatérale de wilcox.test() ne renseigne pas sur le sens
-    # de la différence : reconstruire un Z à partir d'elle produirait
-    # systématiquement une valeur positive, quel que soit le groupe qui a
-    # tendance à présenter les valeurs les plus élevées. On calcule donc le
-    # Z directement à partir de la statistique W (test de x1 contre x2),
-    # standardisée par rapport à sa moyenne et son écart-type attendus sous
-    # l'hypothèse nulle d'absence de différence entre les deux groupes.
+    # Z signé tiré de W (jamais reconstruit depuis la p-value),
+    # variance corrigée des ex aequo comme dans wilcox.test()
     muW <- n1 * n2 / 2
-    sigmaW <- sqrt(n1 * n2 * (n1 + n2 + 1) / 12)
-    zValue <- (as.numeric(testResult$statistic) - muW) / sigmaW
-
-    # Taille d'effet r, signée : positive si niveau1 tend à avoir des
-    # valeurs plus elevees que niveau2, negative dans le cas inverse.
+    effectifsEx <- as.numeric(table(c(x1, x2)))
+    correctionEx <- sum(effectifsEx^3 - effectifsEx) / (nTotal * (nTotal - 1))
+    sigmaW <- sqrt(n1 * n2 / 12 * ((nTotal + 1) - correctionEx))
+    zValue <- if (sigmaW > 0) (as.numeric(testResult$statistic) - muW) / sigmaW else 0
     effectSize <- round(zValue / sqrt(nTotal), 3)
 
-    # Categorisation qualitative de l'ampleur de l'effet (seuils usuels
-    # pour une taille d'effet de type r, independants du signe)
     absEffect <- abs(effectSize)
     interpretation <- if (absEffect < 0.1) {
       "Négligeable"
@@ -210,15 +156,11 @@ testerDifferenceBinaire <- function(
     }
 
     data.table::data.table(
-      variable = colName,
-      label = labels[[colName]],
-      n1 = n1,
-      n2 = n2,
-      mediane1 = stats::median(x1, na.rm = TRUE),
-      mediane2 = stats::median(x2, na.rm = TRUE),
-      pValue = round(testResult$p.value, 4),
-      effectSize = effectSize,
-      interpretation = interpretation
+      variable = colName, label = labels[[colName]], n1 = n1, n2 = n2,
+      mediane1 = stats::median(x1), mediane2 = stats::median(x2),
+      pValue = testResult$p.value, effectSize = effectSize, interpretation = interpretation
     )
   })
+  data.table::rbindlist(lignes)
 }
+

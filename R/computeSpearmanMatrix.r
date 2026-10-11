@@ -127,7 +127,7 @@ computeSpearmanMatrix <- function(
   # Calcul de la corrélation et de la p-value pour chaque paire
 
 
-  corResults <- purrr::pmap_dfr(pairsGrid, function(var1, var2) {
+  corResults <- data.table::rbindlist(purrr::pmap(pairsGrid, function(var1, var2) {
     x <- as.numeric(dt[[var1]])
     y <- as.numeric(dt[[var2]])
 
@@ -157,7 +157,7 @@ computeSpearmanMatrix <- function(
       pValue = testResult$p.value,
       n      = completeN
     )
-  })
+  }))
 
 
   # Application des libellés d'affichage

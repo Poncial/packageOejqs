@@ -44,5 +44,11 @@ utils::globalVariables(c(
   "labelVar2",
   "suspect",
   "similarite",
+  "var1",
+  "var2",
+  "pValue",
+  "rho",
+  "suspect",
+  "similarite"
 
 ))
