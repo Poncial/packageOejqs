@@ -29,21 +29,19 @@ des valeurs plus élevées que \code{niveau2}.}
 comparer, servant de référence pour l'interprétation du signe de la
 taille d'effet.}
 
-\item{minN}{Entier. Effectif minimal requis dans chacun des deux groupes
-pour qu'un test soit calculé. En dessous de ce seuil, la ligne
-correspondante est retournée avec des valeurs manquantes plutôt que
-d'exécuter un test statistiquement peu fiable. Par défaut \code{5}.}
+\item{minN}{: Effectif minimal par groupe. En dessous, la ligne est renvoyée avec effectSize = NA et interpretation = "Effectif insuffisant".}
 }
 \value{
 Un \code{data.table} avec une ligne par variable testée, contenant :
 \describe{
 \item{variable}{Nom brut de la colonne testée.}
 \item{label}{Libellé lisible, issu de \code{labels}.}
-\item{n1, n2}{Effectifs non manquants dans \code{niveau1} et
-\code{niveau2} respectivement.}
+\item{n1, n2}{Effectifs non manquants de chaque niveau (renseignés même
+si l'effectif est insuffisant pour tester).}
 \item{mediane1, mediane2}{Médianes observées dans chaque groupe,
 fournies pour vérifier la cohérence du signe de \code{effectSize}.}
-\item{pValue}{P-value bilatérale du test de Mann-Whitney.}
+\item{pValue}{P-value bilatérale brute (non arrondie), à ajuster
+(Holm) par l'appelant si plusieurs tests forment une famille.}
 \item{effectSize}{Taille d'effet signée (voir Details). \code{NA} si
 l'effectif est insuffisant dans l'un des deux groupes.}
 \item{interpretation}{Catégorie qualitative de la taille d'effet, ou
@@ -70,10 +68,13 @@ toute taille d'effet ainsi calculée trompeuse.
 Cette fonction évite ce piège en calculant le score Z directement à
 partir de la statistique W retournée par le test, standardisée par
 rapport à sa moyenne et son écart-type attendus sous l'hypothèse nulle :
-\deqn{Z = \frac{W - n_1 n_2 / 2}{\sqrt{n_1 n_2 (n_1 + n_2 + 1) / 12}}}
-La taille d'effet retournée est \eqn{r = Z / \sqrt{n_1 + n_2}}, positive
-si \code{niveau1} présente des valeurs tendanciellement plus élevées que
-\code{niveau2}, négative dans le cas inverse.
+\deqn{Z = \frac{W - n_1 n_2 / 2}{\sigma_W}, \quad
+  \sigma_W = \sqrt{\frac{n_1 n_2}{12}\left[(N + 1) -
+  \frac{\sum_j (t_j^3 - t_j)}{N (N - 1)}\right]}}
+où \eqn{N = n_1 + n_2} et \eqn{t_j} est le nombre d'observations ex aequo
+pour chaque valeur distincte de l'échantillon combiné. Cette correction est
+celle de \code{\link[stats:wilcox.test]{stats::wilcox.test()}} : le Z et la p-value reposent sur la même
+variance. Si \eqn{\sigma_W = 0} (toutes les valeurs identiques), r vaut 0.
 
 \strong{Seuils d'interprétation de la taille d'effet} (règle usuelle) :
 \code{< 0.1} négligeable, \code{< 0.3} faible, \code{< 0.5} modérée,

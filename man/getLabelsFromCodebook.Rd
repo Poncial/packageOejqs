@@ -2,24 +2,21 @@
 % Please edit documentation in R/getLabelsFromCodebook.r
 \name{getLabelsFromCodebook}
 \alias{getLabelsFromCodebook}
-\title{Extraire un dictionnaire de labels depuis le codebook}
+\title{Extraire un dictionnaire de libellés depuis le codebook}
 \usage{
 getLabelsFromCodebook(codebook, cols, court = TRUE)
 }
 \arguments{
-\item{codebook}{data.table avec au moins les colonnes \code{targetVariable},
-\code{label}, \code{labelCourt}.}
+\item{codebook}{\code{data.table} avec \code{targetVariable}, \code{label} et \code{labelCourt}.}
 
-\item{cols}{Vecteur de variables cibles (\code{targetVariable}) à extraire.}
+\item{cols}{Variables cibles à extraire (sans doublon).}
 
-\item{court}{Si \code{TRUE} (défaut), retourne \code{labelCourt} ; si \code{FALSE},
-retourne \code{label} (libellé complet).}
+\item{court}{\code{TRUE} : \code{labelCourt}. \code{FALSE} : \code{label} complet.}
 }
 \value{
-Vecteur caractère nommé par \code{cols}, dans le même ordre que \code{cols}.
+Vecteur caractère nommé par \code{cols}, dans l'ordre de \code{cols}.
 }
 \description{
-Source unique de vérité pour les libellés utilisés dans les graphiques et
-tableaux d'analyse. Évite de retaper des dictionnaires locaux de labels
-dans chaque script d'analyse.
+Source unique des libellés des analyses. Le codebook est « long » (une ligne
+par modalité) : les lignes sont dédoublonnées par variable cible.
 }

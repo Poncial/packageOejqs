@@ -44,7 +44,7 @@ Un \code{data.table} avec une ligne par variable testée, contenant :
 utilisé pour le test.}
 \item{kGroupes}{Nombre de groupes distincts comparés.}
 \item{pValue}{P-value du test de Kruskal-Wallis.}
-\item{epsilonSq}{Taille d'effet epsilon-carré (voir Details). \code{NA}
+\item{etaSqH}{Taille d'effet η² basé sur H, (H − k + 1)/(n − k)(voir Details). \code{NA}
 si l'effectif ou le nombre de groupes est insuffisant.}
 \item{interpretation}{Catégorie qualitative de la taille d'effet, ou
 \code{"Effectif insuffisant"} si le test n'a pas pu être calculé.}
@@ -70,7 +70,7 @@ de groupes) restent nécessaires en complément.
 
 \strong{Calcul de la taille d'effet epsilon-carré}
 
-La taille d'effet retournée, epsilon-carré (\eqn{\epsilon^2}), est
+La taille d'effet retournée, η² basé sur H, (H − k + 1)/(n − k)(\eqn{\epsilon^2}), est
 calculée à partir de la statistique H du test :
 \deqn{\epsilon^2 = \frac{H - k + 1}{n - k}}
 où \eqn{H} est la statistique de Kruskal-Wallis, \eqn{k} le nombre de
