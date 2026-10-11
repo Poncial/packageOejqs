@@ -16,7 +16,8 @@ plotCorrelationHeatmap(
   width = 9,
   height = 8,
   dpi = 300,
-  labelSize = 2.8
+  labelSize = 2.8,
+  captionTexte = NULL
 )
 }
 \arguments{
@@ -55,6 +56,10 @@ automatiquement s'il n'existe pas.}
 
 \item{labelSize}{Taille du texte affichant les coefficients sur les
 tuiles. Défaut \code{2.8}.}
+
+\item{captionTexte}{Chaîne de caractères. Légende du graphique. Par défaut
+\code{"* p < <sigThreshold>"}. À fournir quand les p-values passées dans
+\code{corDt} sont ajustées (p.ex. Holm), pour que la légende le dise.}
 }
 \value{
 Retourne invisiblement l'objet \code{ggplot} généré. Le graphique est
