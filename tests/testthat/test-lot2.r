@@ -48,3 +48,18 @@ test_that("plotGroupedBarCharts : reverseXOrder numérique sans xBreaks garde le
                             outputDir = tempfile())$x
   expect_true(inherits(p$scales$get_scales("x")$breaks, "waiver"))
 })
+
+test_that("construireCaptionForest : contenu, largeur, validations", {
+  cap <- construireCaptionForest(
+    "Mann-Whitney", 36, "holm", typeEffet = "r",
+    notes = c("Stress scolaire" = "score élevé = stress plus fort"),
+    avertissement = "Cycle confondu avec l'âge.")
+  expect_match(cap, "holm"); expect_match(cap, "36 tests"); expect_match(cap, "r = Z")
+  expect_match(cap, "Stress scolaire"); expect_match(cap, "confondu")
+  expect_true(all(nchar(strsplit(cap, "\n")[[1]]) <= 110))
+  expect_match(construireCaptionForest("Kruskal-Wallis", 5, typeEffet = "etaSqH"), "η²_H")
+  expect_match(construireCaptionForest("MW", 1), "1 test ")
+  expect_error(construireCaptionForest("MW", 0))
+})
+
+expect_match(construireCaptionForest("Spearman", 36, typeEffet = "rho"), "ρ")

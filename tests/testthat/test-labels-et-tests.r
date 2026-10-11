@@ -48,3 +48,15 @@ test_that("testerDifferenceBinaire : signe, ex aequo, constante", {
   expect_equal(abs(res[variable == "x", effectSize]),
                round(qnorm(p / 2, lower.tail = FALSE) / sqrt(n), 3), tolerance = 0.002)
 })
+
+test_that("testerDifferenceBinaire : p non nulle pour un grand z positif", {
+  set.seed(2)
+  dt <- data.table(g = rep(c("A", "B"), each = 3000),
+                   x = c(sample(3:5, 3000, TRUE, prob = c(.2, .3, .5)), sample(1:5, 3000, TRUE)))
+  ab <- testerDifferenceBinaire(dt, "x", c(x = "x"), "g", "A", "B")
+  ba <- testerDifferenceBinaire(dt, "x", c(x = "x"), "g", "B", "A")
+  expect_gt(ab$pValue, 0)
+  expect_equal(ab$pValue, ba$pValue, tolerance = 1e-6)
+  expect_equal(ab$pValue, wilcox.test(dt[g == "B", x], dt[g == "A", x], exact = FALSE)$p.value,
+               tolerance = 1e-6)
+})
